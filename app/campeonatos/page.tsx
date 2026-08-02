@@ -1,4 +1,4 @@
-import CampeonatoCard from "@/components/CampeonatoCard";
+import CampeonatosFiltrados from "@/components/CampeonatosFiltrados";
 
 export default function CampeonatosPage() {
   const campeonatos = [
@@ -22,11 +22,7 @@ export default function CampeonatosPage() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-6">Campeonatos</h1>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {campeonatos.map((camp) => (
-          <CampeonatoCard key={camp.id} {...camp} />
-        ))}
-      </div>
+      <CampeonatosFiltrados campeonatos={campeonatos} />
     </main>
   );
 }
