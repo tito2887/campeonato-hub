@@ -1,10 +1,10 @@
-import Link from "next/link";
+import CampeonatoCard from "@/components/CampeonatoCard";
 
 export default function CampeonatosPage() {
   const campeonatos = [
     {
       id: "elite",
-      nombre: "Campeonato Élite",
+      nombre: "El Mundialito",
       descripcion: "Categoría de alto nivel futbolístico, formato tipo selecciones.",
     },
     {
@@ -14,7 +14,7 @@ export default function CampeonatosPage() {
     },
     {
       id: "femenino",
-      nombre: "Campeonato Femenino",
+      nombre: "El Mundialito Femenino",
       descripcion: "Categoría femenina, formato tipo selecciones.",
     },
   ];
@@ -24,14 +24,7 @@ export default function CampeonatosPage() {
       <h1 className="text-3xl font-bold mb-6">Campeonatos</h1>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {campeonatos.map((camp) => (
-          <Link
-            key={camp.id}
-            href={`/campeonatos/${camp.id}`}
-            className="border rounded-lg p-5 hover:shadow-md transition-shadow"
-          >
-            <h2 className="text-xl font-semibold mb-2">{camp.nombre}</h2>
-            <p className="text-gray-600 text-sm">{camp.descripcion}</p>
-          </Link>
+          <CampeonatoCard key={camp.id} {...camp} />
         ))}
       </div>
     </main>
