@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import CerrarSesionBoton from "@/components/CerrarSesionBoton";
@@ -33,14 +34,20 @@ export default async function DashboardPage() {
         <span className="font-semibold">{perfil?.rol}</span>.
       </p>
 
-      {perfil?.rol === "organizador" ? (
+        {perfil?.rol === "organizador" ? (
         <div className="border rounded-lg p-5">
-          <h2 className="font-semibold mb-2">Panel de organizador</h2>
-          <p className="text-sm text-gray-600">
-            Aquí vas a poder crear y gestionar tus campeonatos.
-          </p>
+           <h2 className="font-semibold mb-2">Panel de organizador</h2>
+           <p className="text-sm text-gray-600 mb-4">
+             Aquí vas a poder crear y gestionar tus campeonatos.
+           </p>
+           <Link
+             href="/dashboard/nuevo"
+             className="inline-block bg-black text-white rounded-full px-4 py-2 text-sm"
+            >
+            Crear campeonato
+            </Link>
         </div>
-      ) : (
+    ) : (
         <div className="border rounded-lg p-5">
           <h2 className="font-semibold mb-2">Panel de participante</h2>
           <p className="text-sm text-gray-600">
