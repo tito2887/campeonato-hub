@@ -50,7 +50,7 @@ export default async function InscribirsePage({
 
       {error === "ya_inscrito" && (
         <p className="text-red-600 text-sm mb-4">
-         Ya estás inscrito en este campeonato con un equipo.
+          Ya estás inscrito en este campeonato con un equipo.
         </p>
       )}
 

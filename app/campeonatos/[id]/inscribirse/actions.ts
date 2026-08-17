@@ -18,30 +18,31 @@ export async function inscribirse(formData: FormData) {
   const nombreEquipo = formData.get("nombre_equipo") as string;
   const telefono = formData.get("telefono_contacto") as string;
 
-  // Verificamos primero si ese equipo ya existe en este campeonato
+  // Verificamos si el nombre del equipo ya fue tomado en este campeonato
   const { data: existente } = await supabase
     .from("inscripciones")
     .select("id")
     .eq("campeonato_id", campeonatoId)
     .eq("nombre_equipo", nombreEquipo)
     .maybeSingle();
-    
 
   if (existente) {
     redirect(`/campeonatos/${campeonatoId}/inscribirse?error=equipo_ocupado`);
   }
 
-  // Verificamos si este usuario ya está inscrito en este campeonato (con cualquier equipo)
+  // Verificamos si el usuario ya registró un equipo en este campeonato
   const { data: yaInscrito } = await supabase
-   .from("inscripciones")
-   .select("id")
-   .eq("campeonato_id", campeonatoId)
-   .eq("usuario_id", user.id)
-   .maybeSingle();
+    .from("inscripciones")
+    .select("id")
+    .eq("campeonato_id", campeonatoId)
+    .eq("usuario_id", user.id)
+    .maybeSingle();
 
   if (yaInscrito) {
-   redirect(`/campeonatos/${campeonatoId}/inscribirse?error=ya_inscrito`);
+    redirect(`/campeonatos/${campeonatoId}/inscribirse?error=ya_inscrito`);
   }
+
+  // Guardamos la nueva inscripción
   const { error } = await supabase.from("inscripciones").insert({
     usuario_id: user.id,
     campeonato_id: campeonatoId,
