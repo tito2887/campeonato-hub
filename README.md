@@ -3,6 +3,7 @@
 Plataforma web para la gestión y difusión de campeonatos de fútbol. Permite a organizadores publicar sus campeonatos (Élite, Copa Sudamericana, Femenino) y a los participantes inscribirse a futuras ediciones, dejando los datos de su equipo.
 
 🔗 Demo en vivo: https://campeonato-hub.vercel.app
+🎥 Video de defensa: https://ister-my.sharepoint.com/:v:/g/personal/tito_carreno_ister_edu_ec/IQAxH0G6YmosT4TM6lY4ZidyAWe0ULczc4azQPvmkL4kteA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=QbyKbN
 
 ## Capturas de pantalla
 
