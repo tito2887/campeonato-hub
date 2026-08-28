@@ -48,7 +48,14 @@ export default async function EditarCampeonatoPage({
         ← Volver sin guardar cambios
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">Editar campeonato</h1>
+      <h1 className="text-2xl font-bold mb-2">Editar campeonato</h1>
+
+      <Link
+        href={`/dashboard/editar/${campeonato.id}/equipos`}
+        className="inline-block bg-blue-600 text-white text-sm rounded-full px-4 py-2 mb-6 hover:bg-blue-700"
+      >
+        ⚽ Gestionar equipos y jugadores
+      </Link>
 
       <form action={editarCampeonato} className="flex flex-col gap-4">
         <input type="hidden" name="campeonato_id" value={campeonato.id} />
