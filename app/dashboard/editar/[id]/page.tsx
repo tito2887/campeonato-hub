@@ -50,12 +50,26 @@ export default async function EditarCampeonatoPage({
 
       <h1 className="text-2xl font-bold mb-2">Editar campeonato</h1>
 
-      <Link
-        href={`/dashboard/editar/${campeonato.id}/equipos`}
-        className="inline-block bg-blue-600 text-white text-sm rounded-full px-4 py-2 mb-6 hover:bg-blue-700"
-      >
-        ⚽ Gestionar equipos y jugadores
-      </Link>
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Link
+          href={`/dashboard/editar/${campeonato.id}/equipos`}
+          className="inline-block bg-blue-600 text-white text-sm rounded-full px-4 py-2 hover:bg-blue-700"
+        >
+          ⚽ Equipos y jugadores
+        </Link>
+        <Link
+          href={`/dashboard/editar/${campeonato.id}/sorteo`}
+          className="inline-block bg-purple-600 text-white text-sm rounded-full px-4 py-2 hover:bg-purple-700"
+        >
+          🎲 Sorteo de grupos
+        </Link>
+        <Link
+          href={`/dashboard/editar/${campeonato.id}/resultados`}
+          className="inline-block bg-green-600 text-white text-sm rounded-full px-4 py-2 hover:bg-green-700"
+        >
+          📊 Resultados y posiciones
+        </Link>
+      </div>
 
       <form action={editarCampeonato} className="flex flex-col gap-4">
         <input type="hidden" name="campeonato_id" value={campeonato.id} />
