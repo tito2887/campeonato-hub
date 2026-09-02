@@ -11,12 +11,6 @@ export default async function Home() {
       supabase.from("jugadores").select("*", { count: "exact", head: true }),
     ]);
 
-  const { data: campeonatosDestacados } = await supabase
-    .from("campeonatos")
-    .select("id, nombre, descripcion, equipos(count)")
-    .order("id", { ascending: false })
-    .limit(3);
-
   return (
     <div className="flex flex-col flex-1">
       {/* Hero */}
@@ -38,10 +32,10 @@ export default async function Home() {
               🏆 Crear mi campeonato
             </Link>
             <Link
-              href="/campeonatos"
+              href="/login"
               className="h-12 flex items-center justify-center rounded-full border border-white px-8 font-medium hover:bg-white hover:text-black transition-colors"
             >
-              Ver campeonatos activos
+              Ver mis campeonatos
             </Link>
           </div>
         </div>
@@ -65,41 +59,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Campeonatos destacados */}
-      <section className="bg-zinc-50 flex-1">
-        <div className="max-w-5xl mx-auto px-6 py-16">
-          <h2 className="text-2xl font-bold mb-8 text-center">Campeonatos destacados</h2>
-
-          {!campeonatosDestacados || campeonatosDestacados.length === 0 ? (
-            <p className="text-center text-zinc-500">
-              Todavía no hay campeonatos publicados. ¡Sé el primero en crear uno!
-            </p>
-          ) : (
-            <div className="grid sm:grid-cols-3 gap-6">
-              {campeonatosDestacados.map((campeonato: any) => (
-                <Link
-                  key={campeonato.id}
-                  href={`/campeonatos/${campeonato.id}`}
-                  className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow flex flex-col gap-2"
-                >
-                  <h3 className="font-semibold text-lg">{campeonato.nombre}</h3>
-                  {campeonato.descripcion && (
-                    <p className="text-sm text-zinc-600 line-clamp-2">
-                      {campeonato.descripcion}
-                    </p>
-                  )}
-                  <span className="text-xs text-zinc-400 mt-2">
-                    {campeonato.equipos?.[0]?.count ?? 0} equipos inscritos
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Cierre para organizadores */}
-      <section className="bg-black text-white">
+      <section className="bg-black text-white flex-1 flex items-center">
         <div className="max-w-3xl mx-auto px-6 py-16 text-center flex flex-col items-center gap-4">
           <h2 className="text-2xl font-bold">¿Organizas torneos de fútbol?</h2>
           <p className="text-zinc-300 max-w-md">

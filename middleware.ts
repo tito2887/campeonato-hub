@@ -31,7 +31,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const rutaProtegida = request.nextUrl.pathname.startsWith("/dashboard");
+  const rutaProtegida =
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname === "/campeonatos";
 
   if (rutaProtegida && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -41,5 +43,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/campeonatos"],
 };
