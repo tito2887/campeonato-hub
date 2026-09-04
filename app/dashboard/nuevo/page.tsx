@@ -1,4 +1,5 @@
 import { crearCampeonato } from "./actions";
+import UbicacionSelector from "@/components/UbicacionSelector";
 
 export default function NuevoCampeonatoPage() {
   return (
@@ -38,6 +39,11 @@ export default function NuevoCampeonatoPage() {
           placeholder="Socio asociado (opcional)"
           className="border rounded-md px-4 py-2"
         />
+
+        <hr className="my-2" />
+        <p className="text-sm text-gray-500 -mt-2">Ubicación del campeonato</p>
+
+        <UbicacionSelector />
 
         <button
           type="submit"
