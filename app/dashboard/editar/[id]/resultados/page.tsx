@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-import ResultadoForm from "./ResultadoForm";
-import TablaPosiciones from "./TablaPosiciones";
+import ResultadosTabs from "./ResultadosTabs";
 import Link from "next/link";
 
 export default async function ResultadosPage({
@@ -38,15 +37,15 @@ export default async function ResultadosPage({
 
   const grupoNumeros = Array.from(
     new Set((equipos ?? []).map((e) => e.grupo).filter((g) => g !== null))
-  ).sort((a, b) => (a as number) - (b as number));
+  ).sort((a, b) => (a as number) - (b as number)) as number[];
 
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Link
-        href={`/dashboard/editar/${campeonatoId}/sorteo`}
+        href={`/dashboard/editar/${campeonatoId}`}
         className="text-sm text-blue-600 hover:underline"
       >
-        ← Volver al sorteo
+        ← Volver al campeonato
       </Link>
 
       <h1 className="text-2xl font-bold mt-2 mb-1">Resultados y posiciones</h1>
@@ -57,25 +56,13 @@ export default async function ResultadosPage({
           Todavía no hay grupos generados. Vuelve a la página de sorteo primero.
         </p>
       ) : (
-        grupoNumeros.map((numeroGrupo) => (
-          <div key={numeroGrupo} className="mb-8">
-            <h3 className="font-semibold text-lg mb-2">Grupo {numeroGrupo}</h3>
-
-            <TablaPosiciones
-              equipos={equipos ?? []}
-              partidos={(partidos ?? []) as any}
-              puntos={puntos}
-              numeroGrupo={numeroGrupo as number}
-            />
-
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Partidos</h4>
-            {partidos
-              ?.filter((p) => p.grupo === numeroGrupo)
-              .map((partido: any) => (
-                <ResultadoForm key={partido.id} partido={partido} campeonatoId={campeonatoId} />
-              ))}
-          </div>
-        ))
+        <ResultadosTabs
+          equipos={equipos ?? []}
+          partidos={(partidos ?? []) as any}
+          puntos={puntos}
+          grupoNumeros={grupoNumeros}
+          campeonatoId={campeonatoId}
+        />
       )}
     </div>
   );
