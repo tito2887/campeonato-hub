@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import { editarCampeonato } from "./actions";
+import UbicacionSelector from "@/components/UbicacionSelector";
 
 export default async function EditarCampeonatoPage({
   params,
@@ -22,7 +23,7 @@ export default async function EditarCampeonatoPage({
 
   const { data: campeonato } = await supabase
     .from("campeonatos")
-    .select("id, nombre, categoria, descripcion, socio, organizador_id")
+    .select("id, nombre, categoria, descripcion, socio, organizador_id, provincia, canton, parroquia")
     .eq("id", id)
     .single();
 
@@ -106,6 +107,15 @@ export default async function EditarCampeonatoPage({
           defaultValue={campeonato.socio ?? ""}
           placeholder="Socio asociado (opcional)"
           className="border rounded-md px-4 py-2"
+        />
+
+        <hr className="my-2" />
+        <p className="text-sm text-gray-500 -mt-2">Ubicación del campeonato</p>
+
+        <UbicacionSelector
+          provinciaInicial={campeonato.provincia ?? ""}
+          cantonInicial={campeonato.canton ?? ""}
+          parroquiaInicial={campeonato.parroquia ?? ""}
         />
 
         <button

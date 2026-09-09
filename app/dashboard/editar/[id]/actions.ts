@@ -19,10 +19,21 @@ export async function editarCampeonato(formData: FormData) {
   const categoria = formData.get("categoria") as string;
   const descripcion = formData.get("descripcion") as string;
   const socio = formData.get("socio") as string;
+  const provincia = formData.get("provincia") as string;
+  const canton = formData.get("canton") as string;
+  const parroquia = formData.get("parroquia") as string;
 
   const { error } = await supabase
     .from("campeonatos")
-    .update({ nombre, categoria, descripcion, socio })
+    .update({
+      nombre,
+      categoria,
+      descripcion,
+      socio,
+      provincia,
+      canton,
+      parroquia: parroquia || null,
+    })
     .eq("id", campeonatoId)
     .eq("organizador_id", user.id);
 
