@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
-import CerrarSesionBoton from "@/components/CerrarSesionBoton";
 import { eliminarCampeonato } from "./actions";
 
 export default async function DashboardPage() {
@@ -15,137 +14,163 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { data: perfil } = await supabase
-    .from("perfiles")
-    .select("nombre, rol")
-    .eq("id", user.id)
-    .single();
+  const { data: misCampeonatos } = await supabase
+    .from("campeonatos")
+    .select("id, nombre, categoria, canton, provincia, equipos(count)")
+    .eq("organizador_id", user.id)
+    .order("created_at", { ascending: true });
 
-  const { data: misCampeonatos } =
-    perfil?.rol === "organizador"
-      ? await supabase
-          .from("campeonatos")
-          .select("id, nombre, categoria")
-          .eq("organizador_id", user.id)
-          .order("created_at", { ascending: true })
-      : { data: null };
-
-  const { data: misInscripciones } =
-    perfil?.rol !== "organizador"
-      ? await supabase
-          .from("inscripciones")
-          .select("nombre_equipo, campeonato_id, campeonatos(id, nombre, categoria)")
-          .eq("usuario_id", user.id)
-      : { data: null };
+  const { data: misInscripciones } = await supabase
+    .from("inscripciones")
+    .select("nombre_equipo, campeonato_id, campeonatos(id, nombre, categoria)")
+    .eq("usuario_id", user.id);
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">
-          Hola, {perfil?.nombre ?? "usuario"}
-        </h1>
-        <CerrarSesionBoton />
+    <div className="min-h-full bg-zinc-50">
+      <div className="bg-zinc-900 text-white">
+        <div className="max-w-4xl mx-auto px-6 py-6 flex gap-8 text-sm">
+          <div>
+            <p className="text-2xl font-bold">{misCampeonatos?.length ?? 0}</p>
+            <p className="text-zinc-400">Campeonatos creados</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{misInscripciones?.length ?? 0}</p>
+            <p className="text-zinc-400">Inscripciones activas</p>
+          </div>
+        </div>
       </div>
 
-      <p className="text-gray-600 mb-8">
-        Estás registrado como{" "}
-        <span className="font-semibold">{perfil?.rol}</span>.
-      </p>
-
-      {perfil?.rol === "organizador" ? (
-        <div className="border rounded-lg p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Mis campeonatos</h2>
+      <main className="max-w-4xl mx-auto px-6 py-8 flex flex-col gap-10">
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-zinc-900">Mis campeonatos</h2>
+              <p className="text-sm text-zinc-500">
+                {misCampeonatos?.length ?? 0} campeonato(s) creado(s)
+              </p>
+            </div>
             <Link
               href="/dashboard/nuevo"
-              className="inline-block bg-black text-white rounded-full px-4 py-2 text-sm"
+              className="inline-flex items-center gap-2 bg-black text-white rounded-full px-5 py-2.5 text-sm font-medium hover:bg-zinc-800 transition-colors"
             >
-              Crear campeonato
+              + Crear campeonato
             </Link>
           </div>
 
           {!misCampeonatos || misCampeonatos.length === 0 ? (
-            <p className="text-sm text-gray-600">
-              Aún no has creado ningún campeonato.
-            </p>
+            <div className="border-2 border-dashed border-zinc-300 rounded-xl p-10 text-center">
+              <p className="text-zinc-500 mb-4">Aun no has creado ningun campeonato.</p>
+              <Link
+                href="/dashboard/nuevo"
+                className="inline-block bg-black text-white rounded-full px-5 py-2.5 text-sm font-medium hover:bg-zinc-800"
+              >
+                Crear el primero
+              </Link>
+            </div>
           ) : (
-            <ul className="flex flex-col gap-3">
-              {misCampeonatos.map((camp) => (
-                <li
+            <div className="grid sm:grid-cols-2 gap-4">
+              {misCampeonatos.map((camp: any) => (
+                <div
                   key={camp.id}
-                  className="flex items-center justify-between border rounded-md px-4 py-3"
+                  className="bg-white border rounded-xl p-5 flex flex-col gap-3 hover:shadow-md transition-shadow"
                 >
                   <div>
-                    <p className="font-medium">{camp.nombre}</p>
-                    <p className="text-xs text-gray-500">{camp.categoria}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-zinc-900">{camp.nombre}</h3>
+                      <span className="text-xs uppercase text-zinc-400 whitespace-nowrap">
+                        {camp.categoria}
+                      </span>
+                    </div>
+                    {(camp.canton || camp.provincia) && (
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {[camp.canton, camp.provincia].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    <p className="text-xs text-zinc-400 mt-1">
+                      {camp.equipos?.[0]?.count ?? 0} equipos
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
+
+                  <div className="flex items-center gap-4 pt-2 border-t">
                     <Link
-                      href={`/dashboard/editar/${camp.id}`}
-                      className="text-sm text-blue-600 hover:underline"
+                      href={"/dashboard/editar/" + camp.id}
+                      className="text-sm font-medium text-blue-600 hover:underline"
                     >
                       Editar
                     </Link>
-                    <form action={eliminarCampeonato}>
-                      <input
-                        type="hidden"
-                        name="campeonato_id"
-                        value={camp.id}
-                      />
+                    <Link
+                      href={"/campeonatos/" + camp.id}
+                      className="text-sm font-medium text-zinc-600 hover:underline"
+                    >
+                      Ver pagina publica
+                    </Link>
+                    <form action={eliminarCampeonato} className="ml-auto">
+                      <input type="hidden" name="campeonato_id" value={camp.id} />
                       <button
                         type="submit"
-                        className="text-sm text-red-600 hover:underline"
+                        className="text-sm font-medium text-red-600 hover:underline"
                       >
                         Eliminar
                       </button>
                     </form>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
-        </div>
-      ) : (
-        <div className="border rounded-lg p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Mis inscripciones</h2>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-zinc-900">Mis inscripciones</h2>
+              <p className="text-sm text-zinc-500">
+                {misInscripciones?.length ?? 0} inscripcion(es)
+              </p>
+            </div>
             <Link
               href="/campeonatos"
-              className="inline-block bg-black text-white rounded-full px-4 py-2 text-sm"
+              className="inline-flex items-center gap-2 border border-zinc-300 rounded-full px-5 py-2.5 text-sm font-medium hover:bg-zinc-100 transition-colors"
             >
               Explorar campeonatos
             </Link>
           </div>
 
           {!misInscripciones || misInscripciones.length === 0 ? (
-            <p className="text-sm text-gray-600">
-              Todavía no te has inscrito a ningún campeonato.
-            </p>
+            <div className="border-2 border-dashed border-zinc-300 rounded-xl p-10 text-center">
+              <p className="text-zinc-500 mb-4">Todavia no te has inscrito a ningun campeonato.</p>
+              <Link
+                href="/campeonatos"
+                className="inline-block bg-black text-white rounded-full px-5 py-2.5 text-sm font-medium hover:bg-zinc-800"
+              >
+                Ver campeonatos disponibles
+              </Link>
+            </div>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <div className="grid sm:grid-cols-2 gap-4">
               {misInscripciones.map((insc: any) => (
-                <li
+                <div
                   key={insc.campeonato_id}
-                  className="flex items-center justify-between border rounded-md px-4 py-3"
+                  className="bg-white border rounded-xl p-5 flex flex-col gap-3 hover:shadow-md transition-shadow"
                 >
                   <div>
-                    <p className="font-medium">{insc.campeonatos?.nombre}</p>
-                    <p className="text-xs text-gray-500">
+                    <h3 className="font-semibold text-zinc-900">{insc.campeonatos?.nombre}</h3>
+                    <p className="text-xs text-zinc-500 mt-1">
                       Equipo: {insc.nombre_equipo}
                     </p>
                   </div>
                   <Link
-                    href={`/campeonatos/${insc.campeonato_id}`}
-                    className="text-sm text-blue-600 hover:underline"
+                    href={"/campeonatos/" + insc.campeonato_id}
+                    className="text-sm font-medium text-blue-600 hover:underline pt-2 border-t"
                   >
                     Ver campeonato
                   </Link>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
-        </div>
-      )}
-    </main>
+        </section>
+      </main>
+    </div>
   );
 }

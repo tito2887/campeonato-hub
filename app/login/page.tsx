@@ -25,6 +25,7 @@ export default function LoginPage() {
 
     if (loginError) {
       setError("Correo o contraseña incorrectos.");
+      setPassword("");
       setCargando(false);
       return;
     }
