@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
-import CerrarSesionBoton from "@/components/CerrarSesionBoton";
+import NavbarMenu from "@/components/NavbarMenu";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -22,32 +22,13 @@ export default async function Navbar() {
   }
 
   return (
-    <nav className="border-b bg-white">
+    <nav className="border-b bg-white sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg">
+        <Link href="/" className="font-bold text-lg whitespace-nowrap">
           Campeonato Hub
         </Link>
 
-        {user ? (
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/dashboard" className="hover:underline">
-              Hola, {nombre}
-            </Link>
-            <CerrarSesionBoton />
-          </div>
-        ) : (
-          <div className="flex gap-6 text-sm">
-            <Link href="/campeonatos" className="hover:underline">
-              Campeonatos
-            </Link>
-            <Link href="/login" className="hover:underline">
-              Iniciar sesión
-            </Link>
-            <Link href="/register" className="hover:underline">
-              Registrarse
-            </Link>
-          </div>
-        )}
+        <NavbarMenu logueado={!!user} nombre={nombre} />
       </div>
     </nav>
   );

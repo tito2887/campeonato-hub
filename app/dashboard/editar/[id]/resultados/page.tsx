@@ -18,7 +18,7 @@ export default async function ResultadosPage({
 
   const { data: equipos } = await supabase
     .from("equipos")
-    .select("id, nombre, grupo")
+    .select("id, nombre, grupo, escudo_url")
     .eq("campeonato_id", campeonatoId);
 
   const { data: partidos } = await supabase
@@ -62,6 +62,7 @@ export default async function ResultadosPage({
           puntos={puntos}
           grupoNumeros={grupoNumeros}
           campeonatoId={campeonatoId}
+          nombreCampeonato={campeonato?.nombre ?? "Campeonato"}
         />
       )}
     </div>

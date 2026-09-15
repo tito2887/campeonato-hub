@@ -1,4 +1,4 @@
-type Partido = {
+export type Partido = {
   grupo: number | null;
   jugado: boolean;
   gol_local: number | null;
@@ -7,19 +7,19 @@ type Partido = {
   equipo_visitante_id: string;
 };
 
-type Equipo = {
+export type Equipo = {
   id: string;
   nombre: string;
   grupo: number | null;
 };
 
-type Puntos = {
+export type Puntos = {
   puntos_victoria: number;
   puntos_empate: number;
   puntos_derrota: number;
 };
 
-type Fila = {
+export type Fila = {
   equipoId: string;
   nombre: string;
   jj: number;
@@ -32,7 +32,7 @@ type Fila = {
   pts: number;
 };
 
-function calcularTabla(equipos: Equipo[], partidos: Partido[], puntos: Puntos): Fila[] {
+export function calcularTabla(equipos: Equipo[], partidos: Partido[], puntos: Puntos): Fila[] {
   const tabla: Record<string, Fila> = {};
 
   for (const equipo of equipos) {

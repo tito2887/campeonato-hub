@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ResultadoForm from "./ResultadoForm";
 import TablaPosiciones from "./TablaPosiciones";
+import DescargarTabla from "./DescargarTabla";
 
 type Equipo = {
   id: string;
@@ -34,12 +35,14 @@ export default function ResultadosTabs({
   puntos,
   grupoNumeros,
   campeonatoId,
+  nombreCampeonato,
 }: {
   equipos: Equipo[];
   partidos: Partido[];
   puntos: Puntos;
   grupoNumeros: number[];
   campeonatoId: string;
+  nombreCampeonato: string;
 }) {
   const [pestaña, setPestaña] = useState<"clasificacion" | "partidos">("clasificacion");
 
@@ -77,6 +80,13 @@ export default function ResultadosTabs({
               partidos={partidos as any}
               puntos={puntos}
               numeroGrupo={numeroGrupo}
+            />
+            <DescargarTabla
+              equipos={equipos}
+              partidos={partidos as any}
+              puntos={puntos}
+              numeroGrupo={numeroGrupo}
+              nombreCampeonato={nombreCampeonato}
             />
           </div>
         ))
