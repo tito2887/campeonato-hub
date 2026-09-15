@@ -24,11 +24,7 @@ const PLANTILLAS: { id: Plantilla; nombre: string; premium: boolean }[] = [
 function EscudoMini({ equipo }: { equipo: Equipo | undefined }) {
   if (equipo?.escudo_url) {
     return (
-      <img
-        src={equipo.escudo_url}
-        alt={equipo.nombre}
-        className="w-6 h-6 rounded-full object-cover inline-block mr-2"
-      />
+      <img src={equipo.escudo_url} alt={equipo.nombre} className="w-6 h-6 rounded-full object-cover inline-block mr-2" />
     );
   }
   return (
@@ -49,7 +45,7 @@ function estilosPlantilla(id: Plantilla) {
     case "estadio":
       return { fondo: "bg-gradient-to-br from-green-900 to-green-700", texto: "text-white", acento: "text-yellow-300", borde: "border-green-600", filaAlt: "bg-green-800/40" };
     default:
-      return { fondo: "bg-white", texto: "text-zinc-900", acento: "text-zinc-900", borde: "border-zinc-200", filaAlt: "bg-zinc-50" };
+      return { fondo: "bg-white", texto: "text-zinc-900", acento: "text-blue-700", borde: "border-zinc-200", filaAlt: "bg-zinc-50" };
   }
 }
 
@@ -127,15 +123,12 @@ export default function DescargarTabla({
       </div>
 
       <div className="relative inline-block">
-        <div
-          ref={refImagen}
-          className={"rounded-lg w-full max-w-lg overflow-hidden relative " + estilos.fondo + " " + estilos.texto}
-        >
+        <div ref={refImagen} className={"rounded-lg w-full max-w-lg overflow-hidden relative " + estilos.fondo + " " + estilos.texto}>
           {esClasica ? (
             <>
-              <div className="bg-zinc-900 text-white text-center py-3 px-4">
+              <div className="bg-blue-700 text-white text-center py-3 px-4">
                 <p className="font-bold text-base">{nombreCampeonato}</p>
-                <p className="text-[10px] uppercase tracking-wider text-zinc-400 mt-0.5">
+                <p className="text-[10px] uppercase tracking-wider text-blue-100 mt-0.5">
                   Clasificacion - Grupo {numeroGrupo}
                 </p>
               </div>
@@ -156,7 +149,7 @@ export default function DescargarTabla({
                   {tabla.map((fila, i) => (
                     <tr key={fila.equipoId} className={i % 2 === 1 ? "bg-zinc-50" : "bg-white"}>
                       <td className="py-2 px-2">
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-zinc-900 text-white text-[10px] font-bold">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-700 text-white text-[10px] font-bold">
                           {i + 1}
                         </span>
                       </td>
@@ -164,7 +157,7 @@ export default function DescargarTabla({
                         <EscudoMini equipo={buscarEquipo(fila.equipoId)} />
                         {fila.nombre}
                       </td>
-                      <td className="py-2 px-1 text-center font-bold text-zinc-900">{fila.pts}</td>
+                      <td className="py-2 px-1 text-center font-bold text-blue-700">{fila.pts}</td>
                       <td className="py-2 px-1 text-center">{fila.jj}</td>
                       <td className="py-2 px-1 text-center">{fila.jg}</td>
                       <td className="py-2 px-1 text-center">{fila.je}</td>
@@ -213,19 +206,12 @@ export default function DescargarTabla({
 
       {plantillaInfo?.premium ? (
         <div className="mt-4 flex items-center gap-3">
-          <button
-            disabled
-            className="bg-zinc-200 text-zinc-500 text-sm rounded-full px-5 py-2 cursor-not-allowed"
-          >
+          <button disabled className="bg-zinc-200 text-zinc-500 text-sm rounded-full px-5 py-2 cursor-not-allowed">
             Bloqueado - proximamente con plan premium
           </button>
         </div>
       ) : (
-        <button
-          onClick={descargar}
-          disabled={descargando}
-          className="mt-4 bg-black text-white text-sm rounded-full px-5 py-2 hover:bg-zinc-800 disabled:opacity-50"
-        >
+        <button onClick={descargar} disabled={descargando} className="mt-4 bg-black text-white text-sm rounded-full px-5 py-2 hover:bg-zinc-800 disabled:opacity-50">
           {descargando ? "Generando..." : "Descargar imagen"}
         </button>
       )}
