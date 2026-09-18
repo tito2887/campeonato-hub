@@ -24,7 +24,7 @@ export default async function ResultadosPage({
   const { data: partidos } = await supabase
     .from("partidos")
     .select(
-      "id, grupo, jugado, gol_local, gol_visitante, equipo_local_id, equipo_visitante_id, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
+      "id, grupo, jugado, gol_local, gol_visitante, equipo_local_id, equipo_visitante_id, vuelta, fecha, hora, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
     )
     .eq("campeonato_id", campeonatoId)
     .order("grupo");

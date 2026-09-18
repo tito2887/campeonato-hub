@@ -36,6 +36,7 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
   }
 
   const numeroGrupos = parseInt(formData.get("numeroGrupos") as string, 10);
+  const formato = (formData.get("formato") as string) || "unico";
 
   if (!numeroGrupos || numeroGrupos < 1) {
     return { error: "Indica un número válido de grupos." };
@@ -78,17 +79,39 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
     equipo_local_id: string;
     equipo_visitante_id: string;
     grupo: number;
+    vuelta: string;
   }[] = [];
 
   grupos.forEach((equiposDelGrupo, indice) => {
     const partidos = generarRoundRobin(equiposDelGrupo);
+
     partidos.forEach((partido) => {
-      partidosParaInsertar.push({
-        campeonato_id: campeonatoId,
-        equipo_local_id: partido.local,
-        equipo_visitante_id: partido.visitante,
-        grupo: indice + 1,
-      });
+      if (formato === "ida_vuelta") {
+        // Partido de ida
+        partidosParaInsertar.push({
+          campeonato_id: campeonatoId,
+          equipo_local_id: partido.local,
+          equipo_visitante_id: partido.visitante,
+          grupo: indice + 1,
+          vuelta: "ida",
+        });
+        // Partido de vuelta (local y visitante invertidos)
+        partidosParaInsertar.push({
+          campeonato_id: campeonatoId,
+          equipo_local_id: partido.visitante,
+          equipo_visitante_id: partido.local,
+          grupo: indice + 1,
+          vuelta: "vuelta",
+        });
+      } else {
+        partidosParaInsertar.push({
+          campeonato_id: campeonatoId,
+          equipo_local_id: partido.local,
+          equipo_visitante_id: partido.visitante,
+          grupo: indice + 1,
+          vuelta: "unico",
+        });
+      }
     });
   });
 

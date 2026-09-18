@@ -51,6 +51,18 @@ export default function SorteoForm({
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium mb-1">Formato de partidos</label>
+        <select
+          name="formato"
+          defaultValue="unico"
+          className="w-full border rounded px-3 py-2"
+        >
+          <option value="unico">Solo ida (todos contra todos, una vez)</option>
+          <option value="ida_vuelta">Ida y vuelta (todos contra todos, dos veces)</option>
+        </select>
+      </div>
+
       {error && <p className="text-red-600 text-sm">{error}</p>}
       {mensaje && <p className="text-green-600 text-sm">{mensaje}</p>}
 

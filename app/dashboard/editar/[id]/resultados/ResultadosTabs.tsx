@@ -21,6 +21,9 @@ type Partido = {
   equipo_visitante_id: string;
   equipo_local: { nombre: string } | null;
   equipo_visitante: { nombre: string } | null;
+  vuelta: string | null;
+  fecha: string | null;
+  hora: string | null;
 };
 
 type Puntos = {

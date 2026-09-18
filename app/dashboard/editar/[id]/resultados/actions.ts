@@ -20,6 +20,8 @@ export async function guardarResultado(
 
   const golLocal = parseInt(formData.get("gol_local") as string, 10);
   const golVisitante = parseInt(formData.get("gol_visitante") as string, 10);
+  const fecha = (formData.get("fecha") as string) || null;
+  const hora = (formData.get("hora") as string) || null;
 
   if (isNaN(golLocal) || isNaN(golVisitante) || golLocal < 0 || golVisitante < 0) {
     return { error: "Ingresa un marcador válido para ambos equipos." };
@@ -31,6 +33,8 @@ export async function guardarResultado(
       gol_local: golLocal,
       gol_visitante: golVisitante,
       jugado: true,
+      fecha,
+      hora,
     })
     .eq("id", partidoId);
 
