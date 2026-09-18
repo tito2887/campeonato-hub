@@ -14,6 +14,7 @@ type Partido = {
   vuelta: string | null;
   fecha: string | null;
   hora: string | null;
+  jornada: number | null;
 };
 
 function BadgeVuelta({ vuelta }: { vuelta: string | null }) {
