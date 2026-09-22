@@ -13,15 +13,40 @@ function mezclar<T>(arreglo: T[]): T[] {
   return copia;
 }
 
-// Genera todos los partidos de todos-contra-todos dentro de un grupo
-function generarRoundRobin(equipoIds: string[]) {
-  const partidos: { local: string; visitante: string }[] = [];
-  for (let i = 0; i < equipoIds.length; i++) {
-    for (let j = i + 1; j < equipoIds.length; j++) {
-      partidos.push({ local: equipoIds[i], visitante: equipoIds[j] });
-    }
+const DESCANSO = "__DESCANSO__";
+
+function generarCalendarioCirculo(equipoIds: string[]) {
+  const equipos = [...equipoIds];
+  if (equipos.length % 2 !== 0) {
+    equipos.push(DESCANSO);
   }
-  return partidos;
+
+  const n = equipos.length;
+  const totalJornadas = n - 1;
+  const partidos: { local: string; visitante: string; jornada: number }[] = [];
+
+  let arreglo = [...equipos];
+
+  for (let ronda = 0; ronda < totalJornadas; ronda++) {
+    for (let i = 0; i < n / 2; i++) {
+      const equipoA = arreglo[i];
+      const equipoB = arreglo[n - 1 - i];
+
+      if (equipoA === DESCANSO || equipoB === DESCANSO) continue;
+
+      const local = ronda % 2 === 0 ? equipoA : equipoB;
+      const visitante = ronda % 2 === 0 ? equipoB : equipoA;
+
+      partidos.push({ local, visitante, jornada: ronda + 1 });
+    }
+
+    const fijo = arreglo[0];
+    const resto = arreglo.slice(1);
+    resto.unshift(resto.pop()!);
+    arreglo = [fijo, ...resto];
+  }
+
+  return { partidos, totalJornadas };
 }
 
 export async function generarSorteo(campeonatoId: string, formData: FormData) {
@@ -55,7 +80,6 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
     return { error: "No puede haber más grupos que equipos." };
   }
 
-  // Mezclar equipos y repartirlos en grupos de forma pareja
   const equiposMezclados = mezclar(equipos.map((e) => e.id));
   const grupos: string[][] = Array.from({ length: numeroGrupos }, () => []);
 
@@ -63,44 +87,42 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
     grupos[indice % numeroGrupos].push(equipoId);
   });
 
-  // Asignar el número de grupo a cada equipo
   for (let g = 0; g < grupos.length; g++) {
     for (const equipoId of grupos[g]) {
       await supabase.from("equipos").update({ grupo: g + 1 }).eq("id", equipoId);
     }
   }
 
-  // Borrar partidos anteriores de este campeonato (si se vuelve a sortear)
   await supabase.from("partidos").delete().eq("campeonato_id", campeonatoId);
 
-  // Generar y guardar los partidos de cada grupo
   const partidosParaInsertar: {
     campeonato_id: string;
     equipo_local_id: string;
     equipo_visitante_id: string;
     grupo: number;
+    jornada: number;
     vuelta: string;
   }[] = [];
 
   grupos.forEach((equiposDelGrupo, indice) => {
-    const partidos = generarRoundRobin(equiposDelGrupo);
+    const { partidos, totalJornadas } = generarCalendarioCirculo(equiposDelGrupo);
 
     partidos.forEach((partido) => {
       if (formato === "ida_vuelta") {
-        // Partido de ida
         partidosParaInsertar.push({
           campeonato_id: campeonatoId,
           equipo_local_id: partido.local,
           equipo_visitante_id: partido.visitante,
           grupo: indice + 1,
+          jornada: partido.jornada,
           vuelta: "ida",
         });
-        // Partido de vuelta (local y visitante invertidos)
         partidosParaInsertar.push({
           campeonato_id: campeonatoId,
           equipo_local_id: partido.visitante,
           equipo_visitante_id: partido.local,
           grupo: indice + 1,
+          jornada: partido.jornada + totalJornadas,
           vuelta: "vuelta",
         });
       } else {
@@ -109,6 +131,7 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
           equipo_local_id: partido.local,
           equipo_visitante_id: partido.visitante,
           grupo: indice + 1,
+          jornada: partido.jornada,
           vuelta: "unico",
         });
       }
