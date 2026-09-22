@@ -24,6 +24,7 @@ type Partido = {
   vuelta: string | null;
   fecha: string | null;
   hora: string | null;
+  jornada: number | null;
 };
 
 type Puntos = {
@@ -94,16 +95,30 @@ export default function ResultadosTabs({
           </div>
         ))
       ) : (
-        grupoNumeros.map((numeroGrupo) => (
-          <div key={numeroGrupo} className="mb-8">
-            <h3 className="font-semibold text-lg mb-2">Grupo {numeroGrupo}</h3>
-            {partidos
-              .filter((p) => p.grupo === numeroGrupo)
-              .map((partido) => (
-                <ResultadoForm key={partido.id} partido={partido} campeonatoId={campeonatoId} />
+        grupoNumeros.map((numeroGrupo) => {
+          const partidosDelGrupo = partidos.filter((p) => p.grupo === numeroGrupo);
+          const jornadas = Array.from(
+            new Set(partidosDelGrupo.map((p) => p.jornada).filter((j) => j !== null))
+          ).sort((a, b) => (a as number) - (b as number)) as number[];
+
+          return (
+            <div key={numeroGrupo} className="mb-8">
+              <h3 className="font-semibold text-lg mb-3">Grupo {numeroGrupo}</h3>
+              {jornadas.map((numeroJornada) => (
+                <div key={numeroJornada} className="mb-5">
+                  <p className="text-sm font-semibold text-gray-500 mb-2">
+                    Fecha {numeroJornada}
+                  </p>
+                  {partidosDelGrupo
+                    .filter((p) => p.jornada === numeroJornada)
+                    .map((partido) => (
+                      <ResultadoForm key={partido.id} partido={partido} campeonatoId={campeonatoId} />
+                    ))}
+                </div>
               ))}
-          </div>
-        ))
+            </div>
+          );
+        })
       )}
     </div>
   );
