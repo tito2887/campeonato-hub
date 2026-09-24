@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import SorteoForm from "./SorteoForm";
+import DescargarFecha from "./DescargarFecha";
 import Link from "next/link";
 
 export default async function SorteoPage({
@@ -26,7 +27,7 @@ export default async function SorteoPage({
   const { data: partidos } = await supabase
     .from("partidos")
     .select(
-      "id, grupo, jornada, vuelta, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
+      "id, grupo, jornada, vuelta, fecha, hora, equipo_local:equipo_local_id(nombre, escudo_url), equipo_visitante:equipo_visitante_id(nombre, escudo_url)"
     )
     .eq("campeonato_id", campeonatoId)
     .order("grupo")
@@ -89,50 +90,13 @@ export default async function SorteoPage({
                     );
 
                     return (
-                      <div
+                      <DescargarFecha
                         key={numeroJornada}
-                        className="border rounded-xl overflow-hidden shadow-sm"
-                      >
-                        <div className="bg-zinc-900 text-white px-4 py-2.5 flex items-center justify-between">
-                          <p className="font-semibold text-sm">Fecha {numeroJornada}</p>
-                          <button
-                            disabled
-                            title="Próximamente"
-                            className="text-[11px] bg-white/10 text-white/50 px-3 py-1 rounded-full cursor-not-allowed"
-                          >
-                            Descargar
-                          </button>
-                        </div>
-
-                        <div className="divide-y">
-                          {partidosDeEstaFecha.map((partido: any) => (
-                            <div
-                              key={partido.id}
-                              className="flex items-center justify-between px-4 py-2.5 text-sm"
-                            >
-                              <span className="flex-1 text-right pr-3">
-                                {partido.equipo_local?.nombre}
-                              </span>
-                              <span className="text-gray-400 text-xs px-2">vs</span>
-                              <span className="flex-1 pl-3">
-                                {partido.equipo_visitante?.nombre}
-                              </span>
-                              {partido.vuelta && partido.vuelta !== "unico" && (
-                                <span
-                                  className={
-                                    "ml-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full " +
-                                    (partido.vuelta === "ida"
-                                      ? "bg-blue-100 text-blue-700"
-                                      : "bg-purple-100 text-purple-700")
-                                  }
-                                >
-                                  {partido.vuelta}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                        nombreCampeonato={campeonato?.nombre ?? "Campeonato"}
+                        numeroGrupo={numeroGrupo}
+                        numeroJornada={numeroJornada}
+                        partidos={partidosDeEstaFecha as any}
+                      />
                     );
                   })}
                 </div>

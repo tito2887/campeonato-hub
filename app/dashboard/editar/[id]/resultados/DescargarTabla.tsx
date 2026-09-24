@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import { calcularTabla, type Partido, type Puntos } from "./TablaPosiciones";
 
 type Equipo = {
