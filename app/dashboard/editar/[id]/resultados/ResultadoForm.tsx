@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { guardarResultado } from "./actions";
+import { guardarFechaHora, guardarResultado } from "./actions";
 
 type Partido = {
   id: string;
@@ -14,7 +14,6 @@ type Partido = {
   vuelta: string | null;
   fecha: string | null;
   hora: string | null;
-  jornada: number | null;
 };
 
 function BadgeVuelta({ vuelta }: { vuelta: string | null }) {
@@ -42,50 +41,46 @@ export default function ResultadoForm({
   partido: Partido;
   campeonatoId: string;
 }) {
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [errorFecha, setErrorFecha] = useState<string | null>(null);
+  const [errorResultado, setErrorResultado] = useState<string | null>(null);
+  const [isPendingFecha, startTransitionFecha] = useTransition();
+  const [isPendingResultado, startTransitionResultado] = useTransition();
 
-  async function manejarEnvio(formData: FormData) {
-    setError(null);
-    startTransition(async () => {
-      const resultado = await guardarResultado(partido.id, campeonatoId, formData);
-      if (resultado?.error) {
-        setError(resultado.error);
-      }
+  async function manejarFecha(formData: FormData) {
+    setErrorFecha(null);
+    startTransitionFecha(async () => {
+      const resultado = await guardarFechaHora(partido.id, campeonatoId, formData);
+      if (resultado?.error) setErrorFecha(resultado.error);
     });
   }
 
-  // El input type="time" necesita formato HH:MM, y Supabase puede devolver HH:MM:SS
+  async function manejarResultado(formData: FormData) {
+    setErrorResultado(null);
+    startTransitionResultado(async () => {
+      const resultado = await guardarResultado(partido.id, campeonatoId, formData);
+      if (resultado?.error) setErrorResultado(resultado.error);
+    });
+  }
+
   const horaInicial = partido.hora ? partido.hora.slice(0, 5) : "";
 
   return (
-    <form action={manejarEnvio} className="border rounded-lg p-3 mb-2 text-sm">
+    <div className="border rounded-lg p-3 mb-2 text-sm">
       <div className="flex items-center gap-2 mb-2">
         <BadgeVuelta vuelta={partido.vuelta} />
         <span className="flex-1 font-medium">{partido.equipo_local?.nombre}</span>
-
-        <input
-          type="number"
-          name="gol_local"
-          min={0}
-          defaultValue={partido.gol_local ?? ""}
-          className="w-14 border rounded px-2 py-1 text-center"
-        />
-
-        <span>-</span>
-
-        <input
-          type="number"
-          name="gol_visitante"
-          min={0}
-          defaultValue={partido.gol_visitante ?? ""}
-          className="w-14 border rounded px-2 py-1 text-center"
-        />
-
+        <span className="text-gray-400 text-xs px-1">vs</span>
         <span className="flex-1 font-medium text-right">{partido.equipo_visitante?.nombre}</span>
+        {partido.jugado && (
+          <span className="text-[10px] font-bold uppercase bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            Finalizado
+          </span>
+        )}
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* Programar: solo fecha y hora, sin exigir marcador */}
+      <form action={manejarFecha} className="flex items-center gap-2 flex-wrap border-t pt-2 mt-2">
+        <span className="text-xs text-gray-500 w-full sm:w-auto">Programar partido:</span>
         <label className="flex items-center gap-1 text-xs text-gray-500">
           Fecha
           <input
@@ -95,7 +90,6 @@ export default function ResultadoForm({
             className="border rounded px-2 py-1 text-xs"
           />
         </label>
-
         <label className="flex items-center gap-1 text-xs text-gray-500">
           Hora
           <input
@@ -105,17 +99,43 @@ export default function ResultadoForm({
             className="border rounded px-2 py-1 text-xs"
           />
         </label>
-
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPendingFecha}
+          className="text-xs bg-zinc-700 text-white px-3 py-1 rounded hover:bg-zinc-800 disabled:opacity-50 ml-auto"
+        >
+          {isPendingFecha ? "..." : "Guardar fecha"}
+        </button>
+        {errorFecha && <span className="text-red-600 text-xs w-full">{errorFecha}</span>}
+      </form>
+
+      {/* Cargar resultado: solo cuando el partido ya se jugó */}
+      <form action={manejarResultado} className="flex items-center gap-2 border-t pt-2 mt-2">
+        <span className="text-xs text-gray-500">Cargar resultado:</span>
+        <input
+          type="number"
+          name="gol_local"
+          min={0}
+          defaultValue={partido.gol_local ?? ""}
+          className="w-14 border rounded px-2 py-1 text-center"
+        />
+        <span>-</span>
+        <input
+          type="number"
+          name="gol_visitante"
+          min={0}
+          defaultValue={partido.gol_visitante ?? ""}
+          className="w-14 border rounded px-2 py-1 text-center"
+        />
+        <button
+          type="submit"
+          disabled={isPendingResultado}
           className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50 ml-auto"
         >
-          {isPending ? "..." : partido.jugado ? "Actualizar" : "Guardar"}
+          {isPendingResultado ? "..." : partido.jugado ? "Actualizar" : "Guardar"}
         </button>
-
-        {error && <span className="text-red-600 text-xs w-full">{error}</span>}
-      </div>
-    </form>
+        {errorResultado && <span className="text-red-600 text-xs w-full">{errorResultado}</span>}
+      </form>
+    </div>
   );
 }

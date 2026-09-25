@@ -3,6 +3,39 @@
 import { createClient } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 
+export async function guardarFechaHora(
+  partidoId: string,
+  campeonatoId: string,
+  formData: FormData
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "No autorizado" };
+  }
+
+  const fecha = (formData.get("fecha") as string) || null;
+  const hora = (formData.get("hora") as string) || null;
+
+  const { error } = await supabase
+    .from("partidos")
+    .update({ fecha, hora })
+    .eq("id", partidoId);
+
+  if (error) {
+    return { error: `No se pudo guardar la fecha: ${error.message}` };
+  }
+
+  revalidatePath(`/dashboard/editar/${campeonatoId}/resultados`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/sorteo`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}`);
+  return { success: true };
+}
+
 export async function guardarResultado(
   partidoId: string,
   campeonatoId: string,
@@ -20,8 +53,6 @@ export async function guardarResultado(
 
   const golLocal = parseInt(formData.get("gol_local") as string, 10);
   const golVisitante = parseInt(formData.get("gol_visitante") as string, 10);
-  const fecha = (formData.get("fecha") as string) || null;
-  const hora = (formData.get("hora") as string) || null;
 
   if (isNaN(golLocal) || isNaN(golVisitante) || golLocal < 0 || golVisitante < 0) {
     return { error: "Ingresa un marcador válido para ambos equipos." };
@@ -33,8 +64,6 @@ export async function guardarResultado(
       gol_local: golLocal,
       gol_visitante: golVisitante,
       jugado: true,
-      fecha,
-      hora,
     })
     .eq("id", partidoId);
 

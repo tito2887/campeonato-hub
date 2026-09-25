@@ -27,7 +27,7 @@ export default async function SorteoPage({
   const { data: partidos } = await supabase
     .from("partidos")
     .select(
-      "id, grupo, jornada, vuelta, fecha, hora, jugado, equipo_local:equipo_local_id(nombre, escudo_url), equipo_visitante:equipo_visitante_id(nombre, escudo_url)"
+      "id, grupo, jornada, vuelta, fecha, hora, jugado, gol_local, gol_visitante, equipo_local:equipo_local_id(nombre, escudo_url), equipo_visitante:equipo_visitante_id(nombre, escudo_url)"
     )
     .eq("campeonato_id", campeonatoId)
     .order("grupo")
@@ -85,9 +85,15 @@ export default async function SorteoPage({
 
                 <div className="space-y-4">
                   {jornadas.map((numeroJornada) => {
-                    const partidosDeEstaFecha = partidosDelGrupo.filter(
-                      (p: any) => p.jornada === numeroJornada
-                    );
+                    const partidosDeEstaFecha = partidosDelGrupo
+                      .filter((p: any) => p.jornada === numeroJornada)
+                      // Ordenar por hora (los que aún no tienen hora quedan al final)
+                      .sort((a: any, b: any) => {
+                        if (!a.hora && !b.hora) return 0;
+                        if (!a.hora) return 1;
+                        if (!b.hora) return -1;
+                        return a.hora.localeCompare(b.hora);
+                      });
 
                     return (
                       <DescargarFecha

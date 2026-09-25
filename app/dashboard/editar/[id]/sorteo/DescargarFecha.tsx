@@ -13,6 +13,8 @@ type PartidoFecha = {
   hora?: string | null;
   vuelta?: string | null;
   jugado?: boolean;
+  gol_local?: number | null;
+  gol_visitante?: number | null;
 };
 
 function EscudoMini({ equipo }: { equipo: EquipoRef }) {
@@ -77,27 +79,22 @@ export default function DescargarFecha({
   }
 
   return (
-    <div className="border rounded-xl overflow-hidden shadow-sm">
+    <div className="border rounded-lg overflow-hidden">
       <button
         onClick={() => setAbierto((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-zinc-900 text-white text-left"
+        className="w-full flex items-center justify-between px-4 py-3 bg-zinc-50 hover:bg-zinc-100 text-left"
       >
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-zinc-400">
-            {nombreCampeonato} · Grupo {numeroGrupo}
-          </p>
-          <p className="font-bold text-base">Fecha {numeroJornada}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-zinc-300">
+        <span className="text-sm font-semibold text-zinc-700">Fecha {numeroJornada}</span>
+        <span className="flex items-center gap-3">
+          <span className="text-xs text-zinc-500">
             {partidos.length} partido{partidos.length !== 1 ? "s" : ""} · {jugados}/{partidos.length} jugados
           </span>
-          <span className="text-lg leading-none">{abierto ? "−" : "+"}</span>
-        </div>
+          <span className="text-lg leading-none text-zinc-400">{abierto ? "−" : "+"}</span>
+        </span>
       </button>
 
       {abierto && (
-        <>
+        <div className="border-t">
           <div ref={refImagen} className="bg-white">
             <div className="bg-zinc-900 text-white px-4 py-3">
               <p className="text-[10px] uppercase tracking-wider text-zinc-400">
@@ -119,7 +116,13 @@ export default function DescargarFecha({
                       <EscudoMini equipo={partido.equipo_local} />
                     </div>
 
-                    <span className="text-[11px] text-gray-400 font-semibold px-3">VS</span>
+                    {partido.jugado ? (
+                      <span className="text-sm font-bold px-3 whitespace-nowrap">
+                        {partido.gol_local} - {partido.gol_visitante}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-gray-400 font-semibold px-3">VS</span>
+                    )}
 
                     <div className="flex items-center gap-2 flex-1 text-left">
                       <EscudoMini equipo={partido.equipo_visitante} />
@@ -168,7 +171,7 @@ export default function DescargarFecha({
               {descargando ? "Generando..." : "Descargar imagen"}
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
