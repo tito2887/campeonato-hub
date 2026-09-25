@@ -27,7 +27,7 @@ export default async function SorteoPage({
   const { data: partidos } = await supabase
     .from("partidos")
     .select(
-      "id, grupo, jornada, vuelta, fecha, hora, equipo_local:equipo_local_id(nombre, escudo_url), equipo_visitante:equipo_visitante_id(nombre, escudo_url)"
+      "id, grupo, jornada, vuelta, fecha, hora, jugado, equipo_local:equipo_local_id(nombre, escudo_url), equipo_visitante:equipo_visitante_id(nombre, escudo_url)"
     )
     .eq("campeonato_id", campeonatoId)
     .order("grupo")

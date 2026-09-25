@@ -49,6 +49,19 @@ export default function ResultadosTabs({
   nombreCampeonato: string;
 }) {
   const [pestaña, setPestaña] = useState<"clasificacion" | "partidos">("clasificacion");
+  const [jornadasAbiertas, setJornadasAbiertas] = useState<Set<string>>(new Set());
+
+  function alternarJornada(clave: string) {
+    setJornadasAbiertas((prev) => {
+      const copia = new Set(prev);
+      if (copia.has(clave)) {
+        copia.delete(clave);
+      } else {
+        copia.add(clave);
+      }
+      return copia;
+    });
+  }
 
   return (
     <div>
@@ -104,18 +117,47 @@ export default function ResultadosTabs({
           return (
             <div key={numeroGrupo} className="mb-8">
               <h3 className="font-semibold text-lg mb-3">Grupo {numeroGrupo}</h3>
-              {jornadas.map((numeroJornada) => (
-                <div key={numeroJornada} className="mb-5">
-                  <p className="text-sm font-semibold text-gray-500 mb-2">
-                    Fecha {numeroJornada}
-                  </p>
-                  {partidosDelGrupo
-                    .filter((p) => p.jornada === numeroJornada)
-                    .map((partido) => (
-                      <ResultadoForm key={partido.id} partido={partido} campeonatoId={campeonatoId} />
-                    ))}
-                </div>
-              ))}
+              {jornadas.map((numeroJornada) => {
+                const clave = `${numeroGrupo}-${numeroJornada}`;
+                const partidosDeEstaFecha = partidosDelGrupo.filter(
+                  (p) => p.jornada === numeroJornada
+                );
+                const jugados = partidosDeEstaFecha.filter((p) => p.jugado).length;
+                const abierta = jornadasAbiertas.has(clave);
+
+                return (
+                  <div key={numeroJornada} className="border rounded-lg mb-3 overflow-hidden">
+                    <button
+                      onClick={() => alternarJornada(clave)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-zinc-50 hover:bg-zinc-100 text-left"
+                    >
+                      <span className="text-sm font-semibold text-zinc-700">
+                        Fecha {numeroJornada}
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="text-xs text-zinc-500">
+                          {jugados}/{partidosDeEstaFecha.length} jugados
+                        </span>
+                        <span className="text-lg leading-none text-zinc-400">
+                          {abierta ? "−" : "+"}
+                        </span>
+                      </span>
+                    </button>
+
+                    {abierta && (
+                      <div className="p-3 space-y-2">
+                        {partidosDeEstaFecha.map((partido) => (
+                          <ResultadoForm
+                            key={partido.id}
+                            partido={partido}
+                            campeonatoId={campeonatoId}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })

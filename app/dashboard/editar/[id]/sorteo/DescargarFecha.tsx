@@ -12,6 +12,7 @@ type PartidoFecha = {
   fecha?: string | null;
   hora?: string | null;
   vuelta?: string | null;
+  jugado?: boolean;
 };
 
 function EscudoMini({ equipo }: { equipo: EquipoRef }) {
@@ -57,6 +58,9 @@ export default function DescargarFecha({
 }) {
   const refImagen = useRef<HTMLDivElement>(null);
   const [descargando, setDescargando] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+
+  const jugados = partidos.filter((p) => p.jugado).length;
 
   async function descargar() {
     if (!refImagen.current) return;
@@ -74,71 +78,98 @@ export default function DescargarFecha({
 
   return (
     <div className="border rounded-xl overflow-hidden shadow-sm">
-      <div ref={refImagen} className="bg-white">
-        <div className="bg-zinc-900 text-white px-4 py-3">
+      <button
+        onClick={() => setAbierto((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-zinc-900 text-white text-left"
+      >
+        <div>
           <p className="text-[10px] uppercase tracking-wider text-zinc-400">
             {nombreCampeonato} · Grupo {numeroGrupo}
           </p>
           <p className="font-bold text-base">Fecha {numeroJornada}</p>
         </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-zinc-300">
+            {partidos.length} partido{partidos.length !== 1 ? "s" : ""} · {jugados}/{partidos.length} jugados
+          </span>
+          <span className="text-lg leading-none">{abierto ? "−" : "+"}</span>
+        </div>
+      </button>
 
-        {partidos.map((partido, i) => {
-          const fechaHora = formatearFechaHora(partido.fecha, partido.hora);
-          return (
-            <div
-              key={partido.id}
-              className={"px-4 py-3 " + (i > 0 ? "border-t border-zinc-200" : "")}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 flex-1 justify-end text-right">
-                  <span className="text-sm font-medium">{partido.equipo_local?.nombre}</span>
-                  <EscudoMini equipo={partido.equipo_local} />
-                </div>
-
-                <span className="text-[11px] text-gray-400 font-semibold px-3">VS</span>
-
-                <div className="flex items-center gap-2 flex-1 text-left">
-                  <EscudoMini equipo={partido.equipo_visitante} />
-                  <span className="text-sm font-medium">{partido.equipo_visitante?.nombre}</span>
-                </div>
-              </div>
-
-              {fechaHora ? (
-                <p className="text-center text-[11px] text-gray-400 mt-1">{fechaHora}</p>
-              ) : (
-                <p className="text-center text-[11px] text-gray-300 mt-1">
-                  Fecha y hora por confirmar
-                </p>
-              )}
-
-              {partido.vuelta && partido.vuelta !== "unico" && (
-                <p className="text-center mt-1">
-                  <span
-                    className={
-                      "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full " +
-                      (partido.vuelta === "ida"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-purple-100 text-purple-700")
-                    }
-                  >
-                    {partido.vuelta}
-                  </span>
-                </p>
-              )}
+      {abierto && (
+        <>
+          <div ref={refImagen} className="bg-white">
+            <div className="bg-zinc-900 text-white px-4 py-3">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-400">
+                {nombreCampeonato} · Grupo {numeroGrupo}
+              </p>
+              <p className="font-bold text-base">Fecha {numeroJornada}</p>
             </div>
-          );
-        })}
-      </div>
 
-      <div className="bg-zinc-50 px-4 py-2.5 flex justify-end">
-        <button
-          onClick={descargar}
-          disabled={descargando}
-          className="text-xs bg-black text-white px-4 py-1.5 rounded-full hover:bg-zinc-800 disabled:opacity-50"
-        >
-          {descargando ? "Generando..." : "Descargar imagen"}
-        </button>
-      </div>
+            {partidos.map((partido, i) => {
+              const fechaHora = formatearFechaHora(partido.fecha, partido.hora);
+              return (
+                <div
+                  key={partido.id}
+                  className={"px-4 py-3 " + (i > 0 ? "border-t border-zinc-200" : "")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 justify-end text-right">
+                      <span className="text-sm font-medium">{partido.equipo_local?.nombre}</span>
+                      <EscudoMini equipo={partido.equipo_local} />
+                    </div>
+
+                    <span className="text-[11px] text-gray-400 font-semibold px-3">VS</span>
+
+                    <div className="flex items-center gap-2 flex-1 text-left">
+                      <EscudoMini equipo={partido.equipo_visitante} />
+                      <span className="text-sm font-medium">{partido.equipo_visitante?.nombre}</span>
+                    </div>
+                  </div>
+
+                  {fechaHora ? (
+                    <p className="text-center text-[11px] text-gray-400 mt-1">{fechaHora}</p>
+                  ) : (
+                    <p className="text-center text-[11px] text-gray-300 mt-1">
+                      Fecha y hora por confirmar
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-center gap-2 mt-1">
+                    {partido.vuelta && partido.vuelta !== "unico" && (
+                      <span
+                        className={
+                          "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full " +
+                          (partido.vuelta === "ida"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-purple-100 text-purple-700")
+                        }
+                      >
+                        {partido.vuelta}
+                      </span>
+                    )}
+                    {partido.jugado && (
+                      <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                        Finalizado
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bg-zinc-50 px-4 py-2.5 flex justify-end">
+            <button
+              onClick={descargar}
+              disabled={descargando}
+              className="text-xs bg-black text-white px-4 py-1.5 rounded-full hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {descargando ? "Generando..." : "Descargar imagen"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
