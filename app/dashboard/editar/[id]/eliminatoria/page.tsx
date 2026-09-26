@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import EliminatoriaForm from "./EliminatoriaForm";
+import DescargarFase from "./DescargarFase";
+import BracketEliminatoria from "./BracketEliminatoria";
 import ResultadoForm from "../resultados/ResultadoForm";
 import Link from "next/link";
 
@@ -52,31 +54,44 @@ export default async function EliminatoriaPage({
       <EliminatoriaForm campeonatoId={campeonatoId} />
 
       {fases.length > 0 && (
-        <div className="space-y-8">
-          {fases.map((fase: any) => {
-            const partidosDeEstaFase = (partidos ?? []).filter((p: any) => p.fase === fase);
-            const llaves = Array.from(
-              new Set(partidosDeEstaFase.map((p: any) => p.llave))
-            ).sort((a: any, b: any) => a - b);
+        <>
+          <div className="border rounded-xl bg-zinc-50 p-4 mb-8">
+            <BracketEliminatoria partidos={partidos as any} />
+          </div>
 
-            return (
-              <div key={fase}>
-                <h3 className="font-semibold text-lg mb-3 capitalize">{fase}</h3>
-                <div className="space-y-3">
-                  {llaves.map((llave: any) => (
-                    <div key={llave} className="space-y-2">
-                      {partidosDeEstaFase
-                        .filter((p: any) => p.llave === llave)
-                        .map((p: any) => (
-                          <ResultadoForm key={p.id} partido={p} campeonatoId={campeonatoId} />
-                        ))}
-                    </div>
-                  ))}
+          <div className="space-y-8">
+            {fases.map((fase: any) => {
+              const partidosDeEstaFase = (partidos ?? []).filter((p: any) => p.fase === fase);
+              const llaves = Array.from(
+                new Set(partidosDeEstaFase.map((p: any) => p.llave))
+              ).sort((a: any, b: any) => a - b);
+
+              return (
+                <div key={fase}>
+                  <h3 className="font-semibold text-lg mb-3 capitalize">{fase}</h3>
+
+                  <DescargarFase
+                    nombreCampeonato={campeonato?.nombre ?? "Campeonato"}
+                    fase={fase}
+                    partidos={partidosDeEstaFase as any}
+                  />
+
+                  <div className="space-y-3 mt-4">
+                    {llaves.map((llave: any) => (
+                      <div key={llave} className="space-y-2">
+                        {partidosDeEstaFase
+                          .filter((p: any) => p.llave === llave)
+                          .map((p: any) => (
+                            <ResultadoForm key={p.id} partido={p} campeonatoId={campeonatoId} />
+                          ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
