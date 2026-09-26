@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import EliminatoriaForm from "./EliminatoriaForm";
+import ResultadoForm from "../resultados/ResultadoForm";
 import Link from "next/link";
 
 const ORDEN_FASE: Record<string, number> = {
@@ -27,7 +28,7 @@ export default async function EliminatoriaPage({
   const { data: partidos } = await supabase
     .from("partidos")
     .select(
-      "id, fase, llave, vuelta, jugado, gol_local, gol_visitante, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
+      "id, fase, llave, vuelta, fecha, hora, jugado, gol_local, gol_visitante, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
     )
     .eq("campeonato_id", campeonatoId)
     .neq("fase", "grupos");
@@ -51,7 +52,7 @@ export default async function EliminatoriaPage({
       <EliminatoriaForm campeonatoId={campeonatoId} />
 
       {fases.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {fases.map((fase: any) => {
             const partidosDeEstaFase = (partidos ?? []).filter((p: any) => p.fase === fase);
             const llaves = Array.from(
@@ -60,22 +61,14 @@ export default async function EliminatoriaPage({
 
             return (
               <div key={fase}>
-                <h3 className="font-semibold text-lg mb-2 capitalize">{fase}</h3>
-                <div className="space-y-2">
+                <h3 className="font-semibold text-lg mb-3 capitalize">{fase}</h3>
+                <div className="space-y-3">
                   {llaves.map((llave: any) => (
-                    <div key={llave} className="border rounded-lg p-3 text-sm">
+                    <div key={llave} className="space-y-2">
                       {partidosDeEstaFase
                         .filter((p: any) => p.llave === llave)
                         .map((p: any) => (
-                          <div key={p.id} className="flex items-center justify-between">
-                            <span>
-                              {p.equipo_local?.nombre} vs {p.equipo_visitante?.nombre}
-                            </span>
-                            <span className="text-gray-400 text-xs">
-                              {p.vuelta !== "unico" ? p.vuelta + " · " : ""}
-                              {p.jugado ? `${p.gol_local}-${p.gol_visitante}` : "Pendiente"}
-                            </span>
-                          </div>
+                          <ResultadoForm key={p.id} partido={p} campeonatoId={campeonatoId} />
                         ))}
                     </div>
                   ))}
