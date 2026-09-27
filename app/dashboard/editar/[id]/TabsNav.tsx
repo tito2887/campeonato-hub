@@ -10,9 +10,7 @@ export default function TabsNav({ campeonatoId }: { campeonatoId: string }) {
   const tabs = [
     { href: base, label: "Resumen", exact: true },
     { href: `${base}/equipos`, label: "Equipos y jugadores" },
-    { href: `${base}/sorteo`, label: "Sorteo de grupos" },
-    { href: `${base}/resultados`, label: "Resultados y posiciones" },
-    { href: `${base}/eliminatoria`, label: "Fase eliminatoria" },
+    { href: `${base}/partidos`, label: "Partidos" },
     { href: `${base}/datos`, label: "Datos del campeonato" },
   ];
 
