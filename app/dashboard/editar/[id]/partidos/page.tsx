@@ -3,17 +3,7 @@ import SorteoForm from "../sorteo/SorteoForm";
 import TablaPosiciones from "../resultados/TablaPosiciones";
 import DescargarTabla from "../resultados/DescargarTabla";
 import FechaGrupo from "./FechaGrupo";
-import EliminatoriaForm from "../eliminatoria/EliminatoriaForm";
-import BracketEliminatoria from "../eliminatoria/BracketEliminatoria";
-import FaseBloque from "./FaseBloque";
-
-const ORDEN_FASE: Record<number extends never ? string : string, number> = {
-  dieciseisavos: 1,
-  octavos: 2,
-  cuartos: 3,
-  semifinal: 4,
-  final: 5,
-};
+import EliminatoriaSeccion from "./EliminatoriaSeccion";
 
 export default async function PartidosPage({
   params,
@@ -64,10 +54,6 @@ export default async function PartidosPage({
   const grupoNumeros = Array.from(
     new Set((equipos ?? []).map((e) => e.grupo).filter((g) => g !== null))
   ).sort((a, b) => (a as number) - (b as number)) as number[];
-
-  const fasesElim = Array.from(
-    new Set((partidosEliminatoria ?? []).map((p: any) => p.fase))
-  ).sort((a: any, b: any) => (ORDEN_FASE[a] ?? 99) - (ORDEN_FASE[b] ?? 99));
 
   return (
     <div>
@@ -132,36 +118,11 @@ export default async function PartidosPage({
         </div>
       )}
 
-      <div className="mt-10 pt-8 border-t">
-        <h3 className="font-semibold text-lg mb-3">Fase eliminatoria</h3>
-
-        <EliminatoriaForm campeonatoId={campeonatoId} />
-
-        {fasesElim.length > 0 && (
-          <>
-            <div className="border rounded-xl bg-zinc-50 p-4 mb-6">
-              <BracketEliminatoria partidos={partidosEliminatoria as any} />
-            </div>
-
-            <div>
-              {fasesElim.map((fase: any) => {
-                const partidosDeEstaFase = (partidosEliminatoria ?? []).filter(
-                  (p: any) => p.fase === fase
-                );
-                return (
-                  <FaseBloque
-                    key={fase}
-                    nombreCampeonato={nombreCampeonato}
-                    fase={fase}
-                    partidos={partidosDeEstaFase as any}
-                    campeonatoId={campeonatoId}
-                  />
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
+      <EliminatoriaSeccion
+        campeonatoId={campeonatoId}
+        nombreCampeonato={nombreCampeonato}
+        partidosEliminatoria={(partidosEliminatoria ?? []) as any}
+      />
     </div>
   );
 }

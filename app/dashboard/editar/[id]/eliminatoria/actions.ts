@@ -172,5 +172,32 @@ export async function generarEliminatoria(campeonatoId: string, formData: FormDa
   }
 
   revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
   return { success: true, fase: faseInicial, totalPartidos: partidosParaInsertar.length };
+}
+
+export async function eliminarFaseEliminatoria(campeonatoId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "No autorizado" };
+  }
+
+  const { error } = await supabase
+    .from("partidos")
+    .delete()
+    .eq("campeonato_id", campeonatoId)
+    .neq("fase", "grupos");
+
+  if (error) {
+    return { error: `No se pudo eliminar la fase eliminatoria: ${error.message}` };
+  }
+
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
+  return { success: true };
 }
