@@ -2,6 +2,23 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
 import { calcularTabla, type Partido, type Puntos } from "./resultados/TablaPosiciones";
 
+function EscudoMini({ escudoUrl, nombre }: { escudoUrl?: string | null; nombre: string }) {
+  if (escudoUrl) {
+    return (
+      <img
+        src={escudoUrl}
+        alt={nombre}
+        className="w-5 h-5 rounded-full object-cover inline-block mr-2 align-middle"
+      />
+    );
+  }
+  return (
+    <span className="w-5 h-5 rounded-full bg-zinc-200 text-zinc-500 text-[8px] inline-flex items-center justify-center mr-2 align-middle">
+      S/E
+    </span>
+  );
+}
+
 export default async function ResumenCampeonatoPage({
   params,
 }: {
@@ -62,8 +79,99 @@ export default async function ResumenCampeonatoPage({
     <div className="flex flex-col gap-8">
       <section>
         <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Tabla de posiciones</h2>
+          <Link
+            href={`/dashboard/editar/${campeonatoId}/partidos`}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Ver completa y descargar →
+          </Link>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          {grupoNumeros.map((numeroGrupo) => {
+            const equiposDelGrupo = (equipos ?? []).filter((e) => e.grupo === numeroGrupo);
+            const partidosDelGrupo = todosPartidos.filter(
+              (p) => p.grupo === numeroGrupo
+            ) as Partido[];
+            const tabla = calcularTabla(equiposDelGrupo as any, partidosDelGrupo, puntos);
+
+            return (
+              <div key={numeroGrupo} className="border rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-zinc-900 text-white px-4 py-2.5 flex items-center justify-between">
+                  <p className="font-semibold text-sm">Grupo {numeroGrupo}</p>
+                  <p className="text-[11px] text-zinc-400">{tabla.length} equipos</p>
+                </div>
+
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-zinc-100 text-zinc-500 text-[10px] uppercase">
+                      <th className="py-2 px-2 text-left w-8">Pos</th>
+                      <th className="py-2 px-2 text-left">Equipo</th>
+                      <th className="py-2 px-1">PJ</th>
+                      <th className="py-2 px-1">G</th>
+                      <th className="py-2 px-1">E</th>
+                      <th className="py-2 px-1">P</th>
+                      <th className="py-2 px-1">DIF</th>
+                      <th className="py-2 px-2">Pts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tabla.map((fila: any, i: number) => {
+                      const equipo = equiposDelGrupo.find((e) => e.id === fila.equipoId);
+                      return (
+                        <tr key={fila.equipoId} className={i % 2 === 1 ? "bg-zinc-50" : "bg-white"}>
+                          <td className="py-2 px-2">
+                            <span
+                              className={
+                                "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold " +
+                                (i === 0 ? "bg-yellow-400 text-black" : "bg-zinc-900 text-white")
+                              }
+                            >
+                              {i + 1}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2 font-medium">
+                            <EscudoMini escudoUrl={equipo?.escudo_url} nombre={fila.nombre} />
+                            {fila.nombre}
+                          </td>
+                          <td className="py-2 px-1 text-center">{fila.jj}</td>
+                          <td className="py-2 px-1 text-center text-green-600 font-medium">{fila.jg}</td>
+                          <td className="py-2 px-1 text-center text-gray-500">{fila.je}</td>
+                          <td className="py-2 px-1 text-center text-red-500 font-medium">{fila.jp}</td>
+                          <td
+                            className={
+                              "py-2 px-1 text-center " +
+                              (fila.dif > 0
+                                ? "text-green-600"
+                                : fila.dif < 0
+                                ? "text-red-500"
+                                : "text-gray-500")
+                            }
+                          >
+                            {fila.dif > 0 ? "+" + fila.dif : fila.dif}
+                          </td>
+                          <td className="py-2 px-2 text-center font-bold text-blue-700 bg-blue-50">
+                            {fila.pts}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Próximos partidos</h2>
-          <Link href={`/dashboard/editar/${campeonatoId}/partidos`} className="text-sm text-blue-600 hover:underline">
+          <Link
+            href={`/dashboard/editar/${campeonatoId}/partidos`}
+            className="text-sm text-blue-600 hover:underline"
+          >
             Ver todos →
           </Link>
         </div>
@@ -97,7 +205,10 @@ export default async function ResumenCampeonatoPage({
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Últimos resultados</h2>
-          <Link href={`/dashboard/editar/${campeonatoId}/partidos`} className="text-sm text-blue-600 hover:underline">
+          <Link
+            href={`/dashboard/editar/${campeonatoId}/partidos`}
+            className="text-sm text-blue-600 hover:underline"
+          >
             Cargar / ver todos →
           </Link>
         </div>
@@ -116,7 +227,8 @@ export default async function ResumenCampeonatoPage({
               <ul className="flex flex-col gap-2">
                 {jugadosDelGrupo.map((p) => (
                   <li key={p.id} className="border rounded-lg px-4 py-2 text-sm">
-                    {p.equipo_local?.nombre} {p.gol_local} - {p.gol_visitante} {p.equipo_visitante?.nombre}
+                    {p.equipo_local?.nombre} {p.gol_local} - {p.gol_visitante}{" "}
+                    {p.equipo_visitante?.nombre}
                   </li>
                 ))}
               </ul>
@@ -127,39 +239,6 @@ export default async function ResumenCampeonatoPage({
         {todosPartidos.filter((p) => p.jugado).length === 0 && (
           <p className="text-sm text-gray-500">Todavía no se ha jugado ningún partido.</p>
         )}
-      </section>
-
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Tabla de posiciones</h2>
-          <Link href={`/dashboard/editar/${campeonatoId}/partidos`} className="text-sm text-blue-600 hover:underline">
-            Ver completa y descargar →
-          </Link>
-        </div>
-        <div className="flex flex-col gap-6">
-          {grupoNumeros.map((numeroGrupo) => {
-            const equiposDelGrupo = (equipos ?? []).filter((e) => e.grupo === numeroGrupo);
-            const partidosDelGrupo = todosPartidos.filter((p) => p.grupo === numeroGrupo) as Partido[];
-            const tabla = calcularTabla(equiposDelGrupo as any, partidosDelGrupo, puntos).slice(0, 3);
-
-            return (
-              <div key={numeroGrupo}>
-                <p className="text-sm font-medium text-gray-500 mb-2">Grupo {numeroGrupo}</p>
-                <table className="w-full text-sm border-collapse">
-                  <tbody>
-                    {tabla.map((fila, i) => (
-                      <tr key={fila.equipoId} className="border-b">
-                        <td className="py-1.5 pr-2 text-gray-400 w-6">{i + 1}</td>
-                        <td className="py-1.5">{fila.nombre}</td>
-                        <td className="py-1.5 text-right font-semibold">{fila.pts} pts</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })}
-        </div>
       </section>
     </div>
   );
