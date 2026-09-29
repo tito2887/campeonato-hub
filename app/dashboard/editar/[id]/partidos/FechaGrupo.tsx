@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import html2canvas from "html2canvas-pro";
 import ResultadoForm from "../resultados/ResultadoForm";
+import { eliminarFecha } from "./actions";
 
 type EquipoRef = { nombre: string; escudo_url?: string | null } | null;
 
@@ -65,9 +67,12 @@ export default function FechaGrupo({
   partidos: PartidoFecha[];
   campeonatoId: string;
 }) {
+  const router = useRouter();
   const refImagen = useRef<HTMLDivElement>(null);
   const [descargando, setDescargando] = useState(false);
   const [abierto, setAbierto] = useState(false);
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const jugados = partidos.filter((p) => p.jugado).length;
 
@@ -83,6 +88,14 @@ export default function FechaGrupo({
     } finally {
       setDescargando(false);
     }
+  }
+
+  function manejarEliminarFecha() {
+    startTransition(async () => {
+      await eliminarFecha(campeonatoId, numeroGrupo, numeroJornada);
+      setConfirmandoEliminar(false);
+      router.refresh();
+    });
   }
 
   return (
@@ -169,7 +182,33 @@ export default function FechaGrupo({
             })}
           </div>
 
-          <div className="bg-zinc-50 px-4 py-2.5 flex justify-end">
+          <div className="bg-zinc-50 px-4 py-2.5 flex items-center justify-between">
+            {!confirmandoEliminar ? (
+              <button
+                onClick={() => setConfirmandoEliminar(true)}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Eliminar fecha
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-red-700">¿Eliminar esta fecha?</span>
+                <button
+                  onClick={manejarEliminarFecha}
+                  disabled={isPending}
+                  className="text-xs bg-red-600 text-white rounded-full px-3 py-1 hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isPending ? "..." : "Sí"}
+                </button>
+                <button
+                  onClick={() => setConfirmandoEliminar(false)}
+                  className="text-xs border border-zinc-300 rounded-full px-3 py-1"
+                >
+                  No
+                </button>
+              </div>
+            )}
+
             <button
               onClick={descargar}
               disabled={descargando}

@@ -3,6 +3,7 @@ import SorteoForm from "../sorteo/SorteoForm";
 import TablaPosiciones from "../resultados/TablaPosiciones";
 import DescargarTabla from "../resultados/DescargarTabla";
 import FechaGrupo from "./FechaGrupo";
+import AgregarFechaForm from "./AgregarFechaForm";
 import EliminatoriaSeccion from "./EliminatoriaSeccion";
 
 export default async function PartidosPage({
@@ -71,6 +72,8 @@ export default async function PartidosPage({
               new Set(partidosDelGrupo.map((p: any) => p.jornada).filter((j) => j !== null))
             ).sort((a: any, b: any) => a - b) as number[];
 
+            const siguienteJornada = jornadas.length > 0 ? Math.max(...jornadas) + 1 : 1;
+
             return (
               <div key={numeroGrupo}>
                 <h3 className="font-semibold text-lg mb-2">Grupo {numeroGrupo}</h3>
@@ -89,7 +92,7 @@ export default async function PartidosPage({
                   nombreCampeonato={nombreCampeonato}
                 />
 
-                <div className="mt-4">
+                <div className="mt-4 space-y-2">
                   {jornadas.map((numeroJornada) => {
                     const partidosDeEstaFecha = partidosDelGrupo
                       .filter((p: any) => p.jornada === numeroJornada)
@@ -111,6 +114,13 @@ export default async function PartidosPage({
                       />
                     );
                   })}
+
+                  <AgregarFechaForm
+                    campeonatoId={campeonatoId}
+                    numeroGrupo={numeroGrupo}
+                    siguienteJornada={siguienteJornada}
+                    equipos={equiposDelGrupo.map((e) => ({ id: e.id, nombre: e.nombre }))}
+                  />
                 </div>
               </div>
             );
