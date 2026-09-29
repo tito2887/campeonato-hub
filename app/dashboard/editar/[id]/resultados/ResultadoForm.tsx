@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { guardarFechaHora, guardarResultado } from "./actions";
+import DescargarResultado from "./DescargarResultado";
 
 type Partido = {
   id: string;
@@ -37,14 +38,17 @@ function BadgeVuelta({ vuelta }: { vuelta: string | null }) {
 export default function ResultadoForm({
   partido,
   campeonatoId,
+  nombreCampeonato = "Campeonato",
 }: {
   partido: Partido;
   campeonatoId: string;
+  nombreCampeonato?: string;
 }) {
   const [errorFecha, setErrorFecha] = useState<string | null>(null);
   const [errorResultado, setErrorResultado] = useState<string | null>(null);
   const [isPendingFecha, startTransitionFecha] = useTransition();
   const [isPendingResultado, startTransitionResultado] = useTransition();
+  const [mostrarDescarga, setMostrarDescarga] = useState(false);
 
   async function manejarFecha(formData: FormData) {
     setErrorFecha(null);
@@ -136,6 +140,28 @@ export default function ResultadoForm({
         </button>
         {errorResultado && <span className="text-red-600 text-xs w-full">{errorResultado}</span>}
       </form>
+
+      {partido.jugado && (
+        <div className="border-t pt-2 mt-2">
+          {!mostrarDescarga ? (
+            <button
+              onClick={() => setMostrarDescarga(true)}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              📸 Ver imagen de este resultado
+            </button>
+          ) : (
+            <DescargarResultado
+              nombreCampeonato={nombreCampeonato}
+              equipoLocal={partido.equipo_local}
+              equipoVisitante={partido.equipo_visitante}
+              golLocal={partido.gol_local}
+              golVisitante={partido.gol_visitante}
+              vuelta={partido.vuelta}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
