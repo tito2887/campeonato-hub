@@ -132,6 +132,7 @@ export default async function PartidosPage({
         campeonatoId={campeonatoId}
         nombreCampeonato={nombreCampeonato}
         partidosEliminatoria={(partidosEliminatoria ?? []) as any}
+        equipos={(equipos ?? []).map((e) => ({ id: e.id, nombre: e.nombre }))}
       />
     </div>
   );

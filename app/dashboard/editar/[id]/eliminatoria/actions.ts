@@ -201,3 +201,54 @@ export async function eliminarFaseEliminatoria(campeonatoId: string) {
   revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
   return { success: true };
 }
+
+export async function agregarPartidoManual(campeonatoId: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "No autorizado" };
+  }
+
+  const fase = ((formData.get("fase") as string) || "").trim().toLowerCase();
+  const equipoLocalId = formData.get("equipoLocal") as string;
+  const equipoVisitanteId = formData.get("equipoVisitante") as string;
+  const vuelta = (formData.get("vuelta") as string) || "unico";
+
+  if (!fase) {
+    return { error: "Indica el nombre de la fase (ej. Diferido, Repesca, Cuartos)." };
+  }
+  if (!equipoLocalId || !equipoVisitanteId || equipoLocalId === equipoVisitanteId) {
+    return { error: "Elige 2 equipos distintos." };
+  }
+
+  const { data: llavesExistentes } = await supabase
+    .from("partidos")
+    .select("llave")
+    .eq("campeonato_id", campeonatoId)
+    .eq("fase", fase)
+    .order("llave", { ascending: false })
+    .limit(1);
+
+  const siguienteLlave = (llavesExistentes?.[0]?.llave ?? 0) + 1;
+
+  const { error } = await supabase.from("partidos").insert({
+    campeonato_id: campeonatoId,
+    equipo_local_id: equipoLocalId,
+    equipo_visitante_id: equipoVisitanteId,
+    fase,
+    llave: siguienteLlave,
+    vuelta,
+  });
+
+  if (error) {
+    return { error: `No se pudo agregar el partido: ${error.message}` };
+  }
+
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
+  return { success: true };
+}
