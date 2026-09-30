@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { guardarFechaHora, guardarResultado } from "./actions";
 import DescargarResultado from "./DescargarResultado";
+import TandaPenales from "../eliminatoria/TandaPenales";
 
 type Partido = {
   id: string;
@@ -10,11 +11,16 @@ type Partido = {
   jugado: boolean;
   gol_local: number | null;
   gol_visitante: number | null;
+  equipo_local_id?: string;
+  equipo_visitante_id?: string;
   equipo_local: { nombre: string } | null;
   equipo_visitante: { nombre: string } | null;
   vuelta: string | null;
   fecha: string | null;
   hora: string | null;
+  fase?: string | null;
+  llave?: number | null;
+  penales_ganador_id?: string | null;
 };
 
 function BadgeVuelta({ vuelta }: { vuelta: string | null }) {
@@ -68,6 +74,15 @@ export default function ResultadoForm({
 
   const horaInicial = partido.hora ? partido.hora.slice(0, 5) : "";
 
+  const empatado =
+    partido.jugado &&
+    partido.gol_local !== null &&
+    partido.gol_visitante !== null &&
+    partido.gol_local === partido.gol_visitante;
+
+  const esFaseEliminatoria = !!partido.fase && partido.fase !== "grupos";
+  const necesitaPenales = empatado && esFaseEliminatoria && !partido.penales_ganador_id;
+
   return (
     <div className="border rounded-lg p-3 mb-2 text-sm">
       <div className="flex items-center gap-2 mb-2">
@@ -82,7 +97,6 @@ export default function ResultadoForm({
         )}
       </div>
 
-      {/* Programar: solo fecha y hora, sin exigir marcador */}
       <form action={manejarFecha} className="flex items-center gap-2 flex-wrap border-t pt-2 mt-2">
         <span className="text-xs text-gray-500 w-full sm:w-auto">Programar partido:</span>
         <label className="flex items-center gap-1 text-xs text-gray-500">
@@ -113,7 +127,6 @@ export default function ResultadoForm({
         {errorFecha && <span className="text-red-600 text-xs w-full">{errorFecha}</span>}
       </form>
 
-      {/* Cargar resultado: solo cuando el partido ya se jugó */}
       <form action={manejarResultado} className="flex items-center gap-2 border-t pt-2 mt-2">
         <span className="text-xs text-gray-500">Cargar resultado:</span>
         <input
@@ -140,6 +153,29 @@ export default function ResultadoForm({
         </button>
         {errorResultado && <span className="text-red-600 text-xs w-full">{errorResultado}</span>}
       </form>
+
+      {necesitaPenales &&
+        partido.equipo_local_id &&
+        partido.equipo_visitante_id &&
+        partido.fase &&
+        partido.llave && (
+          <TandaPenales
+            partidoId={partido.id}
+            campeonatoId={campeonatoId}
+            fase={partido.fase}
+            llave={partido.llave}
+            nombreLocal={partido.equipo_local?.nombre ?? "Local"}
+            nombreVisitante={partido.equipo_visitante?.nombre ?? "Visitante"}
+            equipoLocalId={partido.equipo_local_id}
+            equipoVisitanteId={partido.equipo_visitante_id}
+          />
+        )}
+
+      {partido.penales_ganador_id && (
+        <p className="text-xs text-amber-700 font-semibold border-t pt-2 mt-2">
+          🥅 Definido por penales
+        </p>
+      )}
 
       {partido.jugado && (
         <div className="border-t pt-2 mt-2">

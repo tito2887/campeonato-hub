@@ -41,7 +41,7 @@ export default async function PartidosPage({
   const { data: partidosEliminatoria } = await supabase
     .from("partidos")
     .select(
-      "id, fase, llave, vuelta, fecha, hora, jugado, gol_local, gol_visitante, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
+      "id, fase, llave, vuelta, fecha, hora, jugado, gol_local, gol_visitante, equipo_local_id, equipo_visitante_id, penales_ganador_id, equipo_local:equipo_local_id(nombre), equipo_visitante:equipo_visitante_id(nombre)"
     )
     .eq("campeonato_id", campeonatoId)
     .neq("fase", "grupos");

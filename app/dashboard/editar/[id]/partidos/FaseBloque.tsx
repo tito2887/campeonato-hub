@@ -12,6 +12,9 @@ type PartidoFase = {
   llave: number;
   equipo_local: EquipoRef;
   equipo_visitante: EquipoRef;
+  equipo_local_id?: string;
+  equipo_visitante_id?: string;
+  penales_ganador_id?: string | null;
   fecha?: string | null;
   hora?: string | null;
   vuelta?: string | null;
@@ -140,6 +143,11 @@ export default function FaseBloque({
                         Finalizado
                       </span>
                     )}
+                    {partido.penales_ganador_id && (
+                      <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        Penales
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -159,7 +167,12 @@ export default function FaseBloque({
           <div className="p-3 space-y-2 border-t bg-white">
             <p className="text-xs font-semibold text-gray-500 mb-1">Editar partidos de esta fase</p>
             {partidos.map((partido) => (
-              <ResultadoForm key={partido.id} partido={partido as any} campeonatoId={campeonatoId} />
+              <ResultadoForm
+                key={partido.id}
+                partido={partido as any}
+                campeonatoId={campeonatoId}
+                nombreCampeonato={nombreCampeonato}
+              />
             ))}
           </div>
         </div>

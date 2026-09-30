@@ -82,7 +82,12 @@ export default async function EliminatoriaPage({
                         {partidosDeEstaFase
                           .filter((p: any) => p.llave === llave)
                           .map((p: any) => (
-                            <ResultadoForm key={p.id} partido={p} campeonatoId={campeonatoId} />
+                            <ResultadoForm
+                              key={p.id}
+                              partido={p}
+                              campeonatoId={campeonatoId}
+                              nombreCampeonato={campeonato?.nombre ?? "Campeonato"}
+                            />
                           ))}
                       </div>
                     ))}

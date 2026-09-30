@@ -18,7 +18,7 @@ async function ganadorDeLlave(
 ) {
   const { data: partidosLlave } = await supabase
     .from("partidos")
-    .select("equipo_local_id, equipo_visitante_id, gol_local, gol_visitante, jugado")
+    .select("equipo_local_id, equipo_visitante_id, gol_local, gol_visitante, jugado, penales_ganador_id")
     .eq("campeonato_id", campeonatoId)
     .eq("fase", fase)
     .eq("llave", numeroLlave);
@@ -36,12 +36,18 @@ async function ganadorDeLlave(
   const equiposUnicos = Object.keys(golesPorEquipo);
   if (equiposUnicos.length !== 2) return null;
   const [eqA, eqB] = equiposUnicos;
-  if (golesPorEquipo[eqA] === golesPorEquipo[eqB]) return null; // empate global, resolver manualmente
+
+  if (golesPorEquipo[eqA] === golesPorEquipo[eqB]) {
+    // Empate en goles: revisar si ya se definió por penales
+    const conPenales = partidosLlave.find((p: any) => p.penales_ganador_id);
+    if (conPenales) return conPenales.penales_ganador_id as string;
+    return null; // sigue empatado, falta la tanda de penales
+  }
 
   return golesPorEquipo[eqA] > golesPorEquipo[eqB] ? eqA : eqB;
 }
 
-async function intentarAvanzarRonda(
+export async function intentarAvanzarRonda(
   supabase: any,
   campeonatoId: string,
   fase: string,
@@ -55,7 +61,6 @@ async function intentarAvanzarRonda(
   const siblingLlave = llave % 2 === 1 ? llave + 1 : llave - 1;
   const llaveSiguiente = Math.ceil(llave / 2);
 
-  // Si ya se generó el partido de la siguiente ronda para esta llave, no repetir
   const { data: yaExiste } = await supabase
     .from("partidos")
     .select("id")
@@ -69,7 +74,7 @@ async function intentarAvanzarRonda(
   const ganadorActual = await ganadorDeLlave(supabase, campeonatoId, fase, llave);
   const ganadorRival = await ganadorDeLlave(supabase, campeonatoId, fase, siblingLlave);
 
-  if (!ganadorActual || !ganadorRival) return; // falta la otra llave, o hay empate global
+  if (!ganadorActual || !ganadorRival) return;
 
   const { data: muestraPartido } = await supabase
     .from("partidos")
@@ -146,6 +151,7 @@ export async function guardarFechaHora(
   revalidatePath(`/dashboard/editar/${campeonatoId}/resultados`);
   revalidatePath(`/dashboard/editar/${campeonatoId}/sorteo`);
   revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
   revalidatePath(`/dashboard/editar/${campeonatoId}`);
   return { success: true };
 }
@@ -178,12 +184,15 @@ export async function guardarResultado(
     .eq("id", partidoId)
     .single();
 
+  // Si el marcador cambia y deja de estar empatado, limpiar penales previos (ya no aplican)
   const { error } = await supabase
     .from("partidos")
     .update({
       gol_local: golLocal,
       gol_visitante: golVisitante,
       jugado: true,
+      penales: null,
+      penales_ganador_id: null,
     })
     .eq("id", partidoId);
 
@@ -197,6 +206,41 @@ export async function guardarResultado(
 
   revalidatePath(`/dashboard/editar/${campeonatoId}/resultados`);
   revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
   revalidatePath(`/campeonatos/${campeonatoId}`);
+  return { success: true };
+}
+
+export async function guardarPenales(
+  partidoId: string,
+  campeonatoId: string,
+  fase: string,
+  llave: number,
+  penales: { equipo: "local" | "visitante"; resultado: "gol" | "fallo" }[],
+  ganadorId: string
+) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "No autorizado" };
+  }
+
+  const { error } = await supabase
+    .from("partidos")
+    .update({ penales, penales_ganador_id: ganadorId })
+    .eq("id", partidoId);
+
+  if (error) {
+    return { error: `No se pudo guardar la tanda de penales: ${error.message}` };
+  }
+
+  await intentarAvanzarRonda(supabase, campeonatoId, fase, llave);
+
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/eliminatoria`);
   return { success: true };
 }

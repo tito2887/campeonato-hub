@@ -221,7 +221,12 @@ export default function FechaGrupo({
           <div className="p-3 space-y-2 border-t bg-white">
             <p className="text-xs font-semibold text-gray-500 mb-1">Editar partidos de esta fecha</p>
             {partidos.map((partido) => (
-              <ResultadoForm key={partido.id} partido={partido as any} campeonatoId={campeonatoId} />
+              <ResultadoForm
+                key={partido.id}
+                partido={partido as any}
+                campeonatoId={campeonatoId}
+                nombreCampeonato={nombreCampeonato}
+              />
             ))}
           </div>
         </div>
