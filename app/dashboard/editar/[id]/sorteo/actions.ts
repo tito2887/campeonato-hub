@@ -15,6 +15,7 @@ function mezclar<T>(arreglo: T[]): T[] {
 
 const DESCANSO = "__DESCANSO__";
 
+// Método círculo: genera el calendario real de todos-contra-todos organizado en jornadas.
 function generarCalendarioCirculo(equipoIds: string[]) {
   const equipos = [...equipoIds];
   if (equipos.length % 2 !== 0) {
@@ -69,7 +70,7 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
 
   const { data: equipos, error: errorEquipos } = await supabase
     .from("equipos")
-    .select("id")
+    .select("id, nombre")
     .eq("campeonato_id", campeonatoId);
 
   if (errorEquipos || !equipos || equipos.length < 2) {
@@ -80,21 +81,28 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
     return { error: "No puede haber más grupos que equipos." };
   }
 
-  const equiposMezclados = mezclar(equipos.map((e) => e.id));
-  const grupos: string[][] = Array.from({ length: numeroGrupos }, () => []);
+  // Mezclar equipos y repartirlos en grupos de forma pareja
+  const equiposMezclados = mezclar(equipos);
+  const grupos: { id: string; nombre: string }[][] = Array.from(
+    { length: numeroGrupos },
+    () => []
+  );
 
-  equiposMezclados.forEach((equipoId, indice) => {
-    grupos[indice % numeroGrupos].push(equipoId);
+  equiposMezclados.forEach((equipo, indice) => {
+    grupos[indice % numeroGrupos].push(equipo);
   });
 
+  // Asignar el número de grupo a cada equipo
   for (let g = 0; g < grupos.length; g++) {
-    for (const equipoId of grupos[g]) {
-      await supabase.from("equipos").update({ grupo: g + 1 }).eq("id", equipoId);
+    for (const equipo of grupos[g]) {
+      await supabase.from("equipos").update({ grupo: g + 1 }).eq("id", equipo.id);
     }
   }
 
+  // Borrar partidos anteriores de este campeonato (si se vuelve a sortear)
   await supabase.from("partidos").delete().eq("campeonato_id", campeonatoId);
 
+  // Generar y guardar los partidos de cada grupo, organizados en jornadas reales
   const partidosParaInsertar: {
     campeonato_id: string;
     equipo_local_id: string;
@@ -105,7 +113,9 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
   }[] = [];
 
   grupos.forEach((equiposDelGrupo, indice) => {
-    const { partidos, totalJornadas } = generarCalendarioCirculo(equiposDelGrupo);
+    const { partidos, totalJornadas } = generarCalendarioCirculo(
+      equiposDelGrupo.map((e) => e.id)
+    );
 
     partidos.forEach((partido) => {
       if (formato === "ida_vuelta") {
@@ -138,15 +148,30 @@ export async function generarSorteo(campeonatoId: string, formData: FormData) {
     });
   });
 
-  const { error: errorPartidos } = await supabase
-    .from("partidos")
-    .insert(partidosParaInsertar);
+  const { error } = await supabase.from("partidos").insert(partidosParaInsertar);
 
-  if (errorPartidos) {
-    return { error: `No se pudieron generar los partidos: ${errorPartidos.message}` };
+  if (error) {
+    return { error: `No se pudieron generar los partidos: ${error.message}` };
   }
 
   revalidatePath(`/dashboard/editar/${campeonatoId}/sorteo`);
+  revalidatePath(`/dashboard/editar/${campeonatoId}/partidos`);
   revalidatePath(`/campeonatos/${campeonatoId}`);
-  return { success: true, totalPartidos: partidosParaInsertar.length };
+
+  // Para la animación: lista de equipos en el orden en que "cayeron" a su grupo,
+  // cada uno con el número de grupo al que quedó asignado.
+  const equiposAnimacion = grupos.flatMap((equiposDelGrupo, indice) =>
+    equiposDelGrupo.map((equipo) => ({
+      id: equipo.id,
+      nombre: equipo.nombre,
+      grupo: indice + 1,
+    }))
+  );
+
+  return {
+    success: true,
+    totalPartidos: partidosParaInsertar.length,
+    equiposAnimacion,
+    numeroGrupos,
+  };
 }
