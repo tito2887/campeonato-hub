@@ -17,6 +17,9 @@ export default function SorteoAnimado({
   const [sorteando, setSorteando] = useState(true);
 
   useEffect(() => {
+    setRevelados([]);
+    setSorteando(true);
+
     let indice = 0;
     const intervalo = setInterval(() => {
       if (indice >= equipos.length) {
@@ -24,14 +27,22 @@ export default function SorteoAnimado({
         setSorteando(false);
         return;
       }
-      setRevelados((prev) => [...prev, equipos[indice]]);
+
+      // Se guarda el equipo ANTES de actualizar el estado: la función de
+      // setRevelados se ejecuta más tarde, cuando "indice" ya cambió.
+      const equipoActual = equipos[indice];
       indice++;
+
+      if (equipoActual) {
+        setRevelados((prev) => [...prev, equipoActual]);
+      }
     }, 700);
 
     return () => clearInterval(intervalo);
   }, [equipos]);
 
   const grupos = Array.from({ length: numeroGrupos }, (_, i) => i + 1);
+  const revelidosValidos = revelados.filter((e) => e && typeof e.grupo === "number");
 
   return (
     <div className="fixed inset-0 bg-zinc-900/95 z-50 flex items-center justify-center p-4">
@@ -41,7 +52,7 @@ export default function SorteoAnimado({
             {sorteando ? "Sorteando equipos..." : "¡Sorteo completado!"}
           </h3>
           <p className="text-sm text-zinc-500">
-            {revelados.length}/{equipos.length} equipos asignados
+            {revelidosValidos.length}/{equipos.length} equipos asignados
           </p>
         </div>
 
@@ -55,9 +66,9 @@ export default function SorteoAnimado({
                 Grupo {numeroGrupo}
               </div>
               <div className="p-2 flex flex-col gap-1 min-h-[80px]">
-                {revelados
+                {revelidosValidos
                   .filter((e) => e.grupo === numeroGrupo)
-                  .map((e, i) => (
+                  .map((e) => (
                     <div
                       key={e.id}
                       className="bg-zinc-100 rounded px-2 py-1.5 text-xs font-medium text-zinc-800 animate-[entrar_0.4s_ease-out]"

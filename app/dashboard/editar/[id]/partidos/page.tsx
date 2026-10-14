@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-import SorteoForm from "../sorteo/SorteoForm";
+import GruposPanel from "./GruposPanel";
 import TablaPosiciones from "../resultados/TablaPosiciones";
 import DescargarTabla from "../resultados/DescargarTabla";
 import FechaGrupo from "./FechaGrupo";
@@ -60,7 +60,15 @@ export default async function PartidosPage({
     <div>
       <h2 className="text-lg font-semibold mb-4">Partidos</h2>
 
-      <SorteoForm campeonatoId={campeonatoId} totalEquipos={equipos?.length ?? 0} />
+      <GruposPanel
+        campeonatoId={campeonatoId}
+        equipos={(equipos ?? []).map((e) => ({
+          id: e.id,
+          nombre: e.nombre,
+          grupo: e.grupo ?? null,
+        }))}
+        hayPartidos={(partidosGrupos ?? []).length > 0}
+      />
 
       {grupoNumeros.length > 0 && (
         <div className="space-y-10 mt-6">
